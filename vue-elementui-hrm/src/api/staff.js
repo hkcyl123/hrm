@@ -20,7 +20,7 @@ export const add = (data) => {
  * @param id
  * @returns {AxiosPromise}
  */
-export const del = (id) => {
+export const deleteOne = (id) => {
   return request({
     url: url + '/' + id,
     method: 'delete'
@@ -42,67 +42,66 @@ export const edit = (data) => {
   })
 }
 
-export const list = (params) => {
+export const getList = (params, data) => {
   return request({
-    url: url,
-    params
+    url: url + '/page',
+    method: 'post',
+    params,
+    data
   })
+}
+
+// 数据导入
+export const getImportApi = () => {
+  return 'http://localhost:' + process.env.VUE_APP_PORT + url + '/import'
+}
+
+// 数据导出
+export const getExportApi = () => {
+  return 'http://localhost:' + process.env.VUE_APP_PORT + url + '/export'
 }
 
 // 为员工设置角色
 export const setRole = (id, data) => {
   return request({
-    url: url + '/set/' + id,
+    url: url + '/role/' + id,
     method: 'post',
     data
   })
 }
 
 // 获取员工的角色
-export const queryByStaffId = (id) => {
+export const getRole = (id) => {
   return request({
-    url: url + '/staff/' + id
+    url: url + '/role/' + id
   })
 }
 
 // 得到一条数据
-export const query = (id) => {
+export const getOne = (id) => {
   return request({
     url: url + '/' + id
   })
 }
 
 // 得到一条数据
-export const queryInfo = (id) => {
+export const getInfo = (id) => {
   return request({
     url: url + '/info/' + id
   })
 }
 
 // 检查员工的密码
-export const validate = (pwd, id) => {
+export const checkPassword = (pwd, id) => {
   return request({
-    url: url + '/' + pwd + '/' + id
+    url: url + '/check/' + pwd + '/' + id
   })
 }
 
-export const reset = (data) => {
+export const updatePassword = (data) => {
   return request({
-    url: url + '/reset',
+    url: url + '/pwd',
     method: 'put',
     data
   })
-}
-
-export const exp = (filename) => {
-  return request({
-    url: url + '/export/' + filename,
-    method: 'get',
-    responseType: 'blob'
-  })
-}
-
-// 数据导入
-export const getImportApi = () => {
-  return process.env.VUE_APP_HOST + ':' + process.env.VUE_APP_PORT + url + '/import'
 }

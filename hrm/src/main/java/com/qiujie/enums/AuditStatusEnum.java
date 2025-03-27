@@ -7,8 +7,7 @@ import lombok.Getter;
 import org.apache.poi.ss.formula.functions.T;
 
 /**
- * @Author qiujie
- * @Date 2022/4/7
+
  * @Version 1.0
  */
 
@@ -16,11 +15,10 @@ import org.apache.poi.ss.formula.functions.T;
 @AllArgsConstructor
 public enum AuditStatusEnum implements BaseEnum<T> {
 
-    UNAUDITED(0, "待审核","info"),
+    UNAUDITED(0, "未审核","info"),
     APPROVE(1, "审核通过","success"),
     REJECT(2, "驳回","danger"),
-    CANCEL(3, "撤销",""),
-    AUDITING(4,"审核中","warning");
+    CANCEL(3, "撤销","");
 
     @EnumValue
     private final Integer code;

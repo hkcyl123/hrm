@@ -9,8 +9,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * @Author qiujie
- * @Date 2022/4/8
+
  * @Version 1.0
  */
 
@@ -74,7 +73,6 @@ public class StaffSalaryVO implements Serializable {
     @ApiModelProperty("基础工资")
     private BigDecimal baseSalary;
 
-    @ExcelColumn("加班费")
     @ApiModelProperty("加班费")
     private BigDecimal overtimeSalary;
 

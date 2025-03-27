@@ -11,7 +11,7 @@
                        :limit="1">
               <i class="el-icon-edit"></i>
             </el-upload>
-            <img ref="img" src="" alt="头像"/>
+            <img :src="avatar"/>
             <div class="userinfo">
               <p style="margin-bottom: 15px;font-weight: bold;">{{ currentDateInfo }}</p>
               <p class="name">{{ staff.name }}</p>
@@ -65,11 +65,10 @@
 </template>
 <script>
 import * as echarts from 'echarts'
-import { queryCount, queryCity, queryStaff, queryAttendance, queryDepartment } from '@/api/home'
-import { getUploadApi } from '@/api/docs'
-import { edit, queryInfo } from '@/api/staff'
-import { setAvatar } from '@/utils/avatar'
-import { mapGetters } from 'vuex'
+import { getAttendanceData, getCityData, getCountData, getDepartmentData, getStaffData } from '../../api/home'
+import { getDownloadApi, getUploadApi } from '../../api/docs'
+import { edit, getInfo } from '../../api/staff'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Home',
@@ -230,12 +229,16 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['staff', 'token']),
+    ...mapState('staff', ['staff']),
+    ...mapState('token', ['token']),
     headers () {
-      return { Authorization: 'Bearer ' + this.token }
+      return { token: this.token }
     },
     uploadApi () {
-      return getUploadApi(this.staff.id)
+      return getUploadApi()
+    },
+    downloadApi () {
+      return getDownloadApi()
     },
     currentDateInfo () {
       const date = new Date()
@@ -244,24 +247,20 @@ export default {
       const currentDate = date.getDate()
       const day = date.getDay()
       return year + '年' + month + '月' + currentDate + '日' + ' ' + this.dayOfWeek[day]
+    },
+    avatar () {
+      return this.staff.avatar ? this.downloadApi + this.staff.avatar : require('../../assets/images/avatar.png')
     }
   },
   watch: {
     'attendanceData.date':
       function () {
         this.getStaffAttendance()
-      },
-    'staff.avatar': // 当头像被修改时，重新获取
-      function () {
-        setAvatar(this.$refs.img)
       }
-  },
-  mounted () {
-    setAvatar(this.$refs.img)
   },
   methods: {
     loading () {
-      queryInfo(this.staff.id).then(response => {
+      getInfo(this.staff.id).then(response => {
         if (response.code === 200) {
           this.$store.commit('staff/SET_STAFF', response.data)
         } else {
@@ -269,7 +268,7 @@ export default {
         }
       })
 
-      queryStaff().then(response => {
+      getStaffData().then(response => {
         if (response.code === 200) {
           const quarters = ['一季度', '二季度', '三季度', '四季度']
           this.staffOption.xAxis.data = quarters
@@ -284,7 +283,7 @@ export default {
       })
 
       // 获取统计数据
-      queryCount().then(response => {
+      getCountData().then(response => {
         if (response.code === 200) {
           this.countData[0].value = response.data.totalNum
           this.countData[1].value = response.data.normalNum
@@ -298,7 +297,7 @@ export default {
       })
 
       // 获取城市设社保数据
-      queryCity().then(response => {
+      getCityData().then(response => {
         if (response.code === 200) {
           const cityData = response.data.map(item => [item.name, item.comPensionRate, item.comMedicalRate, item.comUnemploymentRate, item.comMaternityRate])
           cityData.unshift(['product', '养老保险', '医疗保险', '失业保险', '生育保险'])
@@ -311,7 +310,7 @@ export default {
       })
 
       // 获取当前月员工的考勤数据
-      queryAttendance({ id: this.staff.id }).then(response => {
+      getAttendanceData({ id: this.staff.id }).then(response => {
         if (response.code === 200) {
           this.attendanceData.list = response.data
         } else {
@@ -319,7 +318,7 @@ export default {
         }
       })
 
-      queryDepartment().then(response => {
+      getDepartmentData().then(response => {
         if (response.code === 200) {
           this.departmentOption.series[0].data = response.data
           const departmentChart = echarts.init(this.$refs.department)
@@ -338,7 +337,7 @@ export default {
       } else {
         month = d.getFullYear() + '' + (d.getMonth() + 1)
       }
-      queryAttendance({ id: this.staff.id, month: month }).then(response => {
+      getAttendanceData({ id: this.staff.id, month: month }).then(response => {
         if (response.code === 200) {
           this.attendanceData.list = response.data
         } else {

@@ -120,14 +120,14 @@
 
     <!--操作-->
     <div style="margin-bottom: 10px">
-      <el-upload v-permission="['money:insurance:import']" :action="importApi" :headers="headers" accept="xlsx" :show-file-list="false"
+      <el-upload :action="importApi" :headers="headers" accept="xlsx" :show-file-list="false"
                  :on-success="handleImportSuccess" :multiple="false"
                  style="display:inline-block">
-        <el-button  type="success" size="mini"
+        <el-button type="success" size="mini"
         >导入 <i class="el-icon-bottom"></i>
         </el-button>
       </el-upload>
-      <el-button v-permission="['money:insurance:export']" type="warning" size="mini" @click="handleExport" style="margin-left: 10px">导出 <i
+      <el-button type="warning" size="mini" @click="exportData" style="margin-left: 10px">导出 <i
         class="el-icon-top"></i>
       </el-button>
     </div>
@@ -158,7 +158,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button v-permission="['money:insurance:search']" type="primary" @click="search" size="mini">搜索 <i class="el-icon-search"/></el-button>
+          <el-button type="primary" @click="search" size="mini">搜索 <i class="el-icon-search"/></el-button>
           <el-button type="danger" @click="reset" size="mini">重置 <i class="el-icon-refresh-left"/></el-button>
         </el-form-item>
       </el-form>
@@ -166,7 +166,6 @@
     <!------------------------ 数据表格 ---------------------->
     <div class="common-table">
       <el-table
-        ref="table"
         :data="table.tableData"
         height="85%"
         border
@@ -175,8 +174,8 @@
         :header-cell-style="{background: '#eef1f6',color: '#606266',
         textAlign:'center',fontWeight:'bold',borderWidth:'3px'}"
       >
-        <el-table-column prop="code" label="工号" min-width="125" align="center" fixed/>
-        <el-table-column prop="name" label="姓名" min-width="125" align="center" fixed/>
+        <el-table-column prop="code" label="工号" min-width="125" align="center"/>
+        <el-table-column prop="name" label="姓名" min-width="125" align="center"/>
         <el-table-column prop="deptName" label="部门" min-width="125" align="center"/>
         <el-table-column prop="phone" label="电话" min-width="125" align="center"/>
         <el-table-column label="社保">
@@ -204,8 +203,8 @@
         </el-table-column>
         <el-table-column label="操作" width="190" fixed="right" align="center">
           <template slot-scope="scope">
-            <el-button v-permission="['money:insurance:set']" size="mini" type="primary" @click="handleEdit(scope.row)"
-            >设置社保 <i class="el-icon-edit"></i
+            <el-button size="mini" type="primary" @click="handleEdit(scope.row)"
+            >明细 <i class="el-icon-edit"></i
             ></el-button>
           </template>
         </el-table-column>
@@ -224,11 +223,10 @@
   </div>
 </template>
 <script>
-import { getImportApi, list, query, setInsurance, exp } from '@/api/insurance'
-import { queryAll as queryAllCity, query as queryCity } from '../../../api/city'
-import { mapGetters } from 'vuex'
-import { queryAll } from '@/api/dept'
-import { write } from '@/utils/docs'
+import { getExportApi, getImportApi, getList, getOne as getInsurance, setInsurance } from '../../../api/insurance'
+import { getAll, getOne } from '../../../api/city'
+import { mapState } from 'vuex'
+import { getAllDept } from '@/api/dept'
 
 export default {
   name: 'Insurance',
@@ -315,9 +313,9 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['token']),
+    ...mapState('token', ['token']),
     headers () {
-      return { Authorization: 'Bearer ' + this.token }
+      return { token: this.token }
     },
     // 获取导入数据的接口
     importApi () {
@@ -341,19 +339,9 @@ export default {
     },
     'dialogForm.formData.perHouseRate': function () {
       this.calculatePerHousePay()
-    },
-    // 监听table数据对象，解决table列fixed对齐错误的问题
-    'table.tableData': function () {
-      this.doLayout()
     }
   },
   methods: {
-    // 重新渲染table组件
-    doLayout () {
-      this.$nextTick(() => {
-        this.$refs.table.doLayout()
-      })
-    },
     calculatePerSocialPay () {
       this.dialogForm.formData.perSocialPay = (this.insuranceTable.tableData[0].perPensionRate +
         this.insuranceTable.tableData[0].perMedicalRate +
@@ -375,15 +363,16 @@ export default {
       this.dialogForm.formData = {}
       this.dialogForm.isShow = true
       this.dialogForm.formData.staffId = row.staffId
+      this.getCity()
       if (row.cityId !== null) {
-        queryCity(row.cityId).then(response => {
+        getOne(row.cityId).then(response => {
           if (response.code === 200) {
             this.insuranceTable.tableData = [response.data]
           } else {
             this.$message.error(response.message)
           }
         })
-        query(row.insuranceId).then(response => {
+        getInsurance(row.insuranceId).then(response => {
           if (response.code === 200) {
             this.dialogForm.formData = response.data
           } else {
@@ -399,7 +388,7 @@ export default {
             if (response.code === 200) {
               this.$message.success('设置成功！')
               this.dialogForm.isShow = false
-              this.search()
+              this.loading()
             } else {
               this.$message.error('设置失败！')
             }
@@ -409,7 +398,18 @@ export default {
         }
       })
     },
+    // 获取社保城市
+    getCity () {
+      getAll().then(response => {
+        if (response.code === 200) {
+          this.dialogForm.cityList = response.data
+        } else {
+          this.$message.error('数据获取失败')
+        }
+      })
+    },
     selectChange (id) {
+      console.log('城市id', id)
       this.dialogForm.cityList.forEach(item => {
         if (item.id === id) {
           this.insuranceTable.tableData = [item]
@@ -418,44 +418,23 @@ export default {
     },
     handleSizeChange (size) {
       this.table.pageConfig.size = size
-      this.search()
+      this.loading()
     },
     handleCurrentChange (current) {
       this.table.pageConfig.current = current
-      this.search()
+      this.loading()
     },
     search () {
-      list({
-        current: this.table.pageConfig.current,
-        size: this.table.pageConfig.size,
-        name: this.searchForm.formData.name,
-        deptId: this.searchForm.formData.deptId
-      }).then(response => {
-        if (response.code === 200) {
-          this.table.tableData = response.data.list
-          this.table.pageConfig.total = response.data.total
-        } else {
-          this.$message.error(response.message)
-        }
-      })
+      this.loading()
     },
     // 重置搜索表单
     reset () {
       this.searchForm.formData = {}
-      this.search()
+      this.loading()
     },
     // 将数据渲染到模板
     loading () {
-      // 加载参保城市
-      queryAllCity().then(response => {
-        if (response.code === 200) {
-          this.dialogForm.cityList = response.data
-        } else {
-          this.$message.error('数据获取失败')
-        }
-      })
-      // 查询所有部门
-      queryAll().then(response => {
+      getAllDept().then(response => {
         const list = []
         response.data.forEach(dept => {
           if (dept.children.length > 0) {
@@ -468,13 +447,10 @@ export default {
         })
         this.searchForm.deptList = list
       })
-      // 加载数据
-      list({
+      getList({
         current: this.table.pageConfig.current,
-        size: this.table.pageConfig.size,
-        name: this.searchForm.formData.name,
-        deptId: this.searchForm.formData.deptId
-      }).then(response => {
+        size: this.table.pageConfig.size
+      }, this.searchForm.formData).then(response => {
         if (response.code === 200) {
           this.table.tableData = response.data.list
           this.table.pageConfig.total = response.data.total
@@ -484,16 +460,13 @@ export default {
       })
     },
     // 导出数据
-    handleExport () {
-      const filename = '员工五险一金表'
-      exp(filename).then(response => {
-        write(response, filename + '.xlsx')
-      })
+    exportData () {
+      window.open(getExportApi())
     },
     handleImportSuccess (response) {
       if (response.code === 200) {
         this.$message.success('数据导入成功！')
-        this.search()
+        this.loading()
       } else {
         this.$message.error('数据导入失败！')
       }

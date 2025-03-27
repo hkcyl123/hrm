@@ -1,12 +1,10 @@
 package com.qiujie.controller;
 
-import com.qiujie.service.AttendanceService;
+import com.qiujie.service.impl.AttendanceServiceImpl;
 import com.qiujie.entity.Attendance;
 
 import com.qiujie.dto.ResponseDTO;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,15 +19,14 @@ import java.util.List;
  * 前端控制器
  * </p>
  *
- * @author qiujie
- * @since 2022-03-29
+
  */
 @RestController
 @RequestMapping("/attendance")
 public class AttendanceController {
 
-    @Autowired
-    private AttendanceService attendanceService;
+    @Resource
+    private AttendanceServiceImpl attendanceService;
 
     @ApiOperation("新增")
     @PostMapping
@@ -40,7 +37,7 @@ public class AttendanceController {
     @ApiOperation("逻辑删除")
     @DeleteMapping("/{id}")
     public ResponseDTO delete(@PathVariable Integer id) {
-        return this.attendanceService.delete(id);
+        return this.attendanceService.deleteById(id);
     }
 
     @ApiOperation("批量逻辑删除")
@@ -57,48 +54,51 @@ public class AttendanceController {
 
     @ApiOperation("查询")
     @GetMapping("/{id}")
-    public ResponseDTO query(@PathVariable Integer id) {
-        return this.attendanceService.query(id);
+    public ResponseDTO findById(@PathVariable Integer id) {
+        return this.attendanceService.findById(id);
     }
 
-    @ApiOperation("条件查询")
+    @ApiOperation("分页条件查询")
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('performance:attendance:list','performance:attendance:search')")
-    public ResponseDTO list(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size, String name, Integer deptId, String month) {
-        return this.attendanceService.list(current, size, name, deptId, month);
+    public ResponseDTO list(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size, String name, Integer deptId,String month) {
+        return this.attendanceService.list(current, size, name,deptId ,month);
     }
 
     @ApiOperation("数据导出接口")
-    @GetMapping("/export/{month}/{filename}")
-    @PreAuthorize("hasAnyAuthority('performance:attendance:export')")
-    public void export(HttpServletResponse response, @PathVariable String month,@PathVariable String filename) throws IOException {
-         this.attendanceService.export(response, month,filename);
+    @GetMapping("/export/{month}")
+    public ResponseDTO export(HttpServletResponse response, @PathVariable String month) throws IOException {
+        return this.attendanceService.export(response, month);
     }
 
     @ApiOperation("数据导入接口")
     @PostMapping("/import")
-    @PreAuthorize("hasAnyAuthority('performance:attendance:import')")
     public ResponseDTO imp(MultipartFile file) throws IOException {
         return this.attendanceService.imp(file);
     }
 
+
     @ApiOperation("查询")
-    @GetMapping("/{id}/{date}")
-    public ResponseDTO queryByStaffIdAndDate(@PathVariable Integer id, @PathVariable String date) {
-        return this.attendanceService.queryByStaffIdAndDate(id, date);
+    @GetMapping("/staff/{id}")
+    public ResponseDTO findByStaffId(@PathVariable Integer id) {
+        return this.attendanceService.findByStaffId(id);
     }
 
-    @ApiOperation("保存或更新")
+    @ApiOperation("查询")
+    @GetMapping("/staff/{id}/{date}")
+    public ResponseDTO findByStaffIdAndDate(@PathVariable Integer id,@PathVariable String date) {
+        return this.attendanceService.findByStaffIdAndDate(id,date);
+    }
+
+    @ApiOperation("编辑更新")
     @PutMapping("/set")
-    @PreAuthorize("hasAnyAuthority('performance:attendance:set')")
     public ResponseDTO setAttendance(@RequestBody Attendance attendance) {
         return this.attendanceService.setAttendance(attendance);
     }
 
     @ApiOperation("获取所有")
     @GetMapping("/all")
-    public ResponseDTO queryAll() {
-        return this.attendanceService.queryAll();
+    public ResponseDTO findAll() {
+        return this.attendanceService.findAll();
     }
 
 }

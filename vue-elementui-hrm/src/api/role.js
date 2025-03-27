@@ -20,7 +20,7 @@ export const add = (data) => {
  * @param id
  * @returns {AxiosPromise}
  */
-export const del = (id) => {
+export const deleteOne = (id) => {
   return request({
     url: url + '/' + id,
     method: 'delete'
@@ -42,7 +42,7 @@ export const edit = (data) => {
   })
 }
 
-export const list = (params) => {
+export const getList = (params) => {
   return request({
     url: url,
     method: 'get',
@@ -51,37 +51,34 @@ export const list = (params) => {
 }
 
 // 查询所有
-export const queryAll = () => {
+export const getAll = () => {
   return request({
     url: url + '/all'
   })
 }
 
+// 数据导入
+export const getImportApi = () => {
+  return 'http://localhost:' + process.env.VUE_APP_PORT + url + '/import'
+}
+
+// 数据导出
+export const getExportApi = () => {
+  return 'http://localhost:' + process.env.VUE_APP_PORT + url + '/export'
+}
+
 // 为角色设置菜单
 export const setMenu = (id, data) => {
   return request({
-    url: url + '/set/' + id,
+    url: url + '/menu/' + id,
     method: 'post',
     data
   })
 }
 
 // 获取角色的菜单
-export const queryByRoleId = (id) => {
+export const getMenu = (id) => {
   return request({
-    url: url + '/role/' + id
+    url: url + '/menu/' + id
   })
-}
-
-export const exp = (filename) => {
-  return request({
-    url: url + '/export/' + filename,
-    method: 'get',
-    responseType: 'blob'
-  })
-}
-
-// 数据导入
-export const getImportApi = () => {
-  return process.env.VUE_APP_HOST + ':' + process.env.VUE_APP_PORT + url + '/import'
 }

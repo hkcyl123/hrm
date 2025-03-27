@@ -16,8 +16,7 @@ import java.sql.Timestamp;
  *
  * </p>
  *
- * @author qiujie
- * @since 2022-04-06
+
  */
 @Getter
 @Setter
@@ -37,14 +36,6 @@ public class Salary implements Serializable {
     @ApiModelProperty("基础工资")
     @TableField("base_salary")
     private BigDecimal baseSalary;
-
-    @ApiModelProperty("平均日薪")
-    @TableField("day_salary")
-    private BigDecimal daySalary;
-
-    @ApiModelProperty("平均时薪资")
-    @TableField("hour_salary")
-    private BigDecimal hourSalary;
 
     @ApiModelProperty("加班费")
     @TableField("overtime_salary")

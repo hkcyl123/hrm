@@ -12,7 +12,7 @@ const instance = axios.create({
  */
 instance.interceptors.request.use(config => {
   config.headers['Content-Type'] = 'application/json;charset=utf-8'
-  config.headers.Authorization = 'Bearer ' + store.getters.token
+  config.headers.token = store.state.token.token
   return config
 }, error => {
   return Promise.reject(error)
@@ -23,12 +23,8 @@ instance.interceptors.request.use(config => {
  */
 instance.interceptors.response.use(response => {
   const res = response.data
-  // 文件特殊处理
-  if (response.request.responseType === 'blob' || response.request.responseType === 'arraybuffer') {
-    return response
-  }
-  // 用户不存在、状态异常、认证失败，直接退出登录
-  if (res.code === 400 || res.code === 500 || res.code === 1200) {
+  // 用户状态异常，token无效等特殊情况直接退出登录
+  if (res.code === 800 || res.code === 900 || res.code === 1200 || res.code === 1300) {
     ElementUI.Message({
       message: res.message,
       type: 'error',

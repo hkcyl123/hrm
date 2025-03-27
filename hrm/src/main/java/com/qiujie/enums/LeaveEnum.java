@@ -18,8 +18,7 @@ public enum LeaveEnum implements BaseEnum<T> {
     SICK_LEAVE(2, "病假"),
     MARRIAGE_LEAVE(3, "婚假"),
     HOME_LEAVE(4, "探亲假"),
-    PATERNITY_LEAVE(5, "陪产假"),
-    TIME_OFF(6, "调休");
+    PATERNITY_LEAVE(5, "陪产假");
 
     @EnumValue
     private final Integer code;

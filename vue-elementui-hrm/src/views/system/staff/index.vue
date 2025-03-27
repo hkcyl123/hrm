@@ -22,13 +22,13 @@
           </el-form-item>
         </el-form-item>
         <el-form-item label-width="40px" style="margin-bottom:4px ">
-          <el-form-item label="部门" style="display:inline-block;margin-right: 8px" prop="deptId">
+          <el-form-item label="部门" style="display:inline-block" prop="deptId">
             <el-select
               placeholder="请选择部门"
               v-model="dialogForm.formData.deptId"
             >
               <el-option
-                v-for="option in deptList"
+                v-for="option in dialogForm.deptList"
                 :key="option.id"
                 :label="option.name"
                 :value="option.id"
@@ -96,18 +96,17 @@
     </el-dialog>
 
     <div style="margin-bottom: 10px">
-      <el-upload v-permission="['system:staff:import']" :action="importApi" :headers="headers" accept="xlsx" :show-file-list="false"
+      <el-upload :action="importApi" :headers="headers" accept="xlsx" :show-file-list="false"
                  :on-success="handleImportSuccess" :multiple="false"
                  style="display:inline-block;">
         <el-button type="success" size="mini"
         >导入 <i class="el-icon-bottom"></i>
         </el-button>
       </el-upload>
-      <el-button v-permission="['system:staff:export']" type="warning" size="mini" @click="handleExport"
-                 style="margin-left: 10px"
+      <el-button type="warning" size="mini" @click="exportData" style="margin-left: 10px"
       >导出 <i class="el-icon-top"></i>
       </el-button>
-      <el-button v-permission="['system:staff:add']" type="primary" @click="handleAdd" size="mini"
+      <el-button type="primary" @click="handleAdd" size="mini"
       >新增 <i class="el-icon-circle-plus-outline"></i>
       </el-button>
       <el-popconfirm
@@ -119,7 +118,7 @@
         title="你确定删除吗？"
         @confirm="handleDeleteBatch"
       >
-        <el-button v-permission="['system:staff:delete']" type="danger" size="mini" slot="reference"
+        <el-button type="danger" size="mini" slot="reference"
         >批量删除 <i class="el-icon-remove-outline"></i>
         </el-button>
       </el-popconfirm>
@@ -151,7 +150,7 @@
             v-model="searchForm.formData.deptId"
           >
             <el-option
-              v-for="option in deptList"
+              v-for="option in searchForm.deptList"
               :key="option.id"
               :label="option.name"
               :value="option.id"
@@ -175,8 +174,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button v-permission="['system:staff:search']" type="primary" @click="search" size="mini">搜索 <i
-            class="el-icon-search"/></el-button>
+          <el-button type="primary" @click="search" size="mini">搜索 <i class="el-icon-search"/></el-button>
           <el-button type="danger" @click="reset" size="mini">重置 <i class="el-icon-refresh-left"/></el-button>
         </el-form-item>
       </el-form>
@@ -184,7 +182,6 @@
     <!---------------------------- 数据表格----------------------------------->
     <div class="common-table">
       <el-table
-        ref="table"
         :data="table.tableData"
         height="85%"
         border
@@ -195,16 +192,16 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="50" align="center"/>
-        <el-table-column prop="code" label="工号" min-width="125" align="center" fixed/>
-        <el-table-column prop="name" label="姓名" min-width="125" align="center" fixed/>
-        <el-table-column prop="age" label="年龄" min-width="125" align="center"/>
+        <el-table-column prop="code" label="工号" min-width="80" align="center"/>
+        <el-table-column prop="name" label="姓名" min-width="80" align="center"/>
+        <el-table-column prop="age" label="年龄" min-width="50" align="center"/>
         <el-table-column prop="deptName" label="部门" min-width="125" align="center"/>
-        <el-table-column prop="gender" label="性别" min-width="125" align="center"/>
+        <el-table-column prop="gender" label="性别" min-width="50" align="center"/>
         <el-table-column prop="phone" label="电话" min-width="125" align="center"/>
         <el-table-column prop="birthday" label="生日" min-width="125" align="center"/>
         <el-table-column label="状态" min-width="150" align="center">
           <template slot-scope="scope">
-            <el-switch v-permission="['system:staff:enable']" v-model="scope.row.status" active-color="#13ce66"
+            <el-switch v-model="scope.row.status" active-color="#13ce66"
                        inactive-color="#ff4949"
                        active-text="正常"
                        inactive-text="异常"
@@ -218,7 +215,7 @@
         <el-table-column prop="remark" label="备注" min-width="200" align="center"/>
         <el-table-column label="操作" width="280" fixed="right" align="center">
           <template slot-scope="scope">
-            <el-button v-permission="['system:staff:edit']" size="mini" type="primary" @click="handleEdit(scope.row)"
+            <el-button size="mini" type="primary" @click="handleEdit(scope.row)"
             >编辑 <i class="el-icon-edit"></i
             ></el-button>
             <el-popconfirm
@@ -230,12 +227,11 @@
               title="你确定删除吗？"
               @confirm="handleDelete(scope.row.id)"
             >
-              <el-button v-permission="['system:staff:delete']" size="mini" type="danger" slot="reference"
+              <el-button size="mini" type="danger" slot="reference"
               >删除 <i class="el-icon-remove-outline"></i
               ></el-button>
             </el-popconfirm>
-            <el-button v-permission="['system:staff:set_role']" type="warning" @click="selectRole(scope.row.id)">分配角色
-              <i class="el-icon-user-solid"/>
+            <el-button type="warning" @click="selectRole(scope.row.id)">分配角色 <i class="el-icon-user-solid"/>
             </el-button>
           </template>
         </el-table-column>
@@ -257,20 +253,19 @@
 import {
   add,
   deleteBatch,
-  del,
+  deleteOne,
   edit,
+  getExportApi,
   getImportApi,
-  list,
-  queryByStaffId,
-  setRole,
-  exp
-} from '@/api/staff'
+  getList,
+  getRole,
+  setRole
+} from '../../../api/staff'
 
-import { queryAll as queryAllRole } from '@/api/role'
+import { getAll } from '../../../api/role'
 
-import { queryAll as queryAllDept } from '@/api/dept'
-import { mapGetters } from 'vuex'
-import { write } from '@/utils/docs'
+import { getAllDept } from '../../../api/dept'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Staff',
@@ -279,9 +274,11 @@ export default {
       dialogForm: {
         type: 'add', // add为新增，edit为编辑
         isShow: false,
+        deptList: [],
         formData: {}
       },
       searchForm: {
+        deptList: [],
         formData: {}
       },
       roleDialog: {
@@ -299,143 +296,23 @@ export default {
       },
       ids: [],
       staffId: 0, // 默认为0
-      deptList: []
+      subDeptList: []
     }
   },
   computed: {
-    ...mapGetters(['token']),
+    ...mapState('token', ['token']),
     headers () {
-      return { Authorization: 'Bearer ' + this.token }
+      return { token: this.token }
     },
     // 获取导入数据的接口
     importApi () {
       return getImportApi()
     }
   },
-  watch: {
-    // 监听table数据对象，解决table列fixed对齐错误的问题
-    'table.tableData': function () {
-      this.doLayout()
-    }
-  },
   methods: {
-    // 重新渲染table组件
-    doLayout () {
-      this.$nextTick(() => {
-        this.$refs.table.doLayout()
-      })
-    },
-    // 点击新增按钮，弹出对话框
-    handleAdd () {
-      this.dialogForm.isShow = true
-      this.dialogForm.type = 'add'
-      this.dialogForm.formData = {}
-    },
-    handleDelete (id) {
-      del(id).then(
-        response => {
-          if (response.code === 200) {
-            this.$message.success('删除成功！')
-            this.search()
-          } else {
-            this.$message.error('删除失败！')
-          }
-        }
-      )
-    },
-    handleDeleteBatch () {
-      deleteBatch(this.ids).then(response => {
-        if (response.code === 200) {
-          this.$message.success('批量删除成功！')
-          this.search()
-        } else {
-          this.$message.error('批量删除失败！')
-        }
-      })
-    },
-    handleEdit (row) {
-      this.dialogForm.isShow = true
-      this.dialogForm.type = 'edit'
-      this.dialogForm.formData = row
-    },
-    confirm () {
-      // 通过type来判断是新增还是编辑
-      if (this.dialogForm.type === 'add') {
-        add(this.dialogForm.formData).then((response) => {
-          if (response.code === 200) {
-            this.$message.success('添加成功！')
-            this.dialogForm.isShow = false
-            this.search()
-          } else {
-            this.$message.error('添加失败！')
-          }
-        })
-      } else {
-        edit(this.dialogForm.formData).then((response) => {
-          if (response.code === 200) {
-            this.$message.success('修改成功！')
-            this.dialogForm.isShow = false
-            this.search()
-          } else {
-            this.$message.error('修改失败！')
-          }
-        })
-      }
-    },
-    search () {
-      list({
-        current: this.table.pageConfig.current,
-        size: this.table.pageConfig.size,
-        name: this.searchForm.formData.name,
-        birthday: this.searchForm.formData.birthday,
-        deptId: this.searchForm.formData.deptId,
-        status: this.searchForm.formData.status
-      }, this.searchForm.formData).then(response => {
-        if (response.code === 200) {
-          this.table.tableData = response.data.list
-          this.table.pageConfig.total = response.data.total
-        } else {
-          this.$message.error(response.message)
-        }
-      })
-    },
-    // 重置搜索表单
-    reset () {
-      this.searchForm.formData = {}
-      this.search()
-    },
-    handleSizeChange (size) {
-      this.table.pageConfig.size = size
-      this.search()
-    },
-    handleCurrentChange (current) {
-      this.table.pageConfig.current = current
-      this.search()
-    },
-    handleSelectionChange (list) {
-      this.ids = list.map(item => item.id)
-    },
-    handleStatusChange (row) {
-      edit(row)
-    },
-    // 加载数据
-    loading () {
-      list({
-        current: this.table.pageConfig.current,
-        size: this.table.pageConfig.size,
-        name: this.searchForm.formData.name,
-        birthday: this.searchForm.formData.birthday,
-        deptId: this.searchForm.formData.deptId,
-        status: this.searchForm.formData.status
-      }, this.searchForm.formData).then(response => {
-        if (response.code === 200) {
-          this.table.tableData = response.data.list
-          this.table.pageConfig.total = response.data.total
-        } else {
-          this.$message.error(response.message)
-        }
-      })
-      queryAllDept().then(response => {
+    getDept () {
+      // 获取所有部门
+      getAllDept().then(response => {
         const list = []
         response.data.forEach(dept => {
           if (dept.children.length > 0) {
@@ -446,27 +323,125 @@ export default {
             })
           }
         })
-        this.deptList = list
+        this.dialogForm.deptList = list
       })
-      queryAllRole().then(response => {
+    },
+    // 点击新增按钮，弹出对话框
+    handleAdd () {
+      this.dialogForm.isShow = true
+      this.dialogForm.type = 'add'
+      this.dialogForm.formData = {}
+      this.getDept()
+    },
+    handleDelete (id) {
+      deleteOne(id).then(
+        response => {
+          if (response.code === 200) {
+            this.$message.success('删除成功！')
+            this.loading()
+          } else {
+            this.$message.error('删除失败！')
+          }
+        }
+      )
+    },
+    handleDeleteBatch () {
+      deleteBatch(this.ids).then(response => {
         if (response.code === 200) {
-          this.roleDialog.roleData = response.data
+          this.$message.success('批量删除成功！')
+          this.loading()
         } else {
-          this.$message.error('获取角色数据失败！')
+          this.$message.error('批量删除失败！')
+        }
+      })
+    },
+    handleEdit (row) {
+      this.dialogForm.isShow = true
+      this.dialogForm.type = 'edit'
+      this.dialogForm.formData = row
+      this.getDept()
+    },
+    confirm () {
+      // 通过type来判断是新增还是编辑
+      if (this.dialogForm.type === 'add') {
+        add(this.dialogForm.formData).then((response) => {
+          if (response.code === 200) {
+            this.$message.success('添加成功！')
+            this.dialogForm.isShow = false
+            this.loading()
+          } else {
+            this.$message.error('添加失败！')
+          }
+        })
+      } else {
+        edit(this.dialogForm.formData).then((response) => {
+          if (response.code === 200) {
+            this.$message.success('修改成功！')
+            this.dialogForm.isShow = false
+            this.loading()
+          } else {
+            this.$message.error('修改失败！')
+          }
+        })
+      }
+    },
+    search () {
+      this.loading()
+    },
+    // 重置搜索表单
+    reset () {
+      this.searchForm.formData = {}
+      this.loading()
+    },
+    handleSizeChange (size) {
+      this.table.pageConfig.size = size
+      this.loading()
+    },
+    handleCurrentChange (current) {
+      this.table.pageConfig.current = current
+      this.loading()
+    },
+    handleSelectionChange (list) {
+      this.ids = list.map(item => item.id)
+    },
+    handleStatusChange (row) {
+      edit(row)
+    },
+    // 加载数据
+    loading () {
+      getAllDept().then(response => {
+        const list = []
+        response.data.forEach(dept => {
+          if (dept.children.length > 0) {
+            dept.disabled = true
+            list.push(dept)
+            dept.children.forEach(subDept => {
+              list.push(subDept)
+            })
+          }
+        })
+        this.searchForm.deptList = list
+      })
+      getList({
+        current: this.table.pageConfig.current,
+        size: this.table.pageConfig.size
+      }, this.searchForm.formData).then(response => {
+        if (response.code === 200) {
+          this.table.tableData = response.data.list
+          this.table.pageConfig.total = response.data.total
+        } else {
+          this.$message.error(response.message)
         }
       })
     },
     // 导出数据
-    handleExport () {
-      const filename = '员工信息表'
-      exp(filename).then(response => {
-        write(response, filename + '.xlsx')
-      })
+    exportData () {
+      window.open(getExportApi())
     },
     handleImportSuccess (response) {
       if (response.code === 200) {
         this.$message.success('数据导入成功！')
-        this.search()
+        this.loading()
       } else {
         this.$message.error('数据导入失败！')
       }
@@ -474,7 +449,14 @@ export default {
     selectRole (id) {
       this.staffId = id
       this.roleDialog.isShow = true
-      queryByStaffId(this.staffId).then(
+      getAll().then(response => {
+        if (response.code === 200) {
+          this.roleDialog.roleData = response.data
+        } else {
+          this.$message.error('获取角色数据失败！')
+        }
+      })
+      getRole(this.staffId).then(
         response => {
           if (response.code === 200) {
             this.roleDialog.checkedData = response.data.map(item => item.roleId)

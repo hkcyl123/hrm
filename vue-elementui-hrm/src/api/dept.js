@@ -19,7 +19,7 @@ export const add = (data) => {
  * @param id
  * @returns {AxiosPromise}
  */
-export const del = (id) => {
+export const deleteOne = (id) => {
   return request({
     url: url + '/' + id,
     method: 'delete'
@@ -42,35 +42,34 @@ export const edit = (data) => {
 }
 
 // 分页条件查询
-export const list = (params) => {
+export const getList = (params) => {
   return request({
-    url: url, method: 'get', params
+    url: url,
+    method: 'get',
+    params
   })
 }
 
 // 查询所有
-export const queryAll = () => {
+export const getAllDept = () => {
   return request({
     url: url + '/all'
   })
 }
 
 // 得到一条数据
-export const query = (id) => {
+export const getOne = (id) => {
   return request({
     url: url + '/' + id
   })
 }
 
-export const exp = (filename) => {
-  return request({
-    url: url + '/export/' + filename,
-    method: 'get',
-    responseType: 'blob'
-  })
-}
-
 // 数据导入
 export const getImportApi = () => {
-  return process.env.VUE_APP_HOST + ':' + process.env.VUE_APP_PORT + url + '/import'
+  return 'http://localhost:' + process.env.VUE_APP_PORT + url + '/import'
+}
+
+// 数据导出
+export const getExportApi = () => {
+  return 'http://localhost:' + process.env.VUE_APP_PORT + url + '/export'
 }

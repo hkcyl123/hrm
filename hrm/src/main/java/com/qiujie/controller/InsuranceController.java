@@ -6,8 +6,6 @@ import com.qiujie.entity.Insurance;
 
 import com.qiujie.dto.ResponseDTO;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,13 +20,12 @@ import java.util.List;
  * 前端控制器
  * </p>
  *
- * @author qiujie
- * @since 2022-03-23
+
  */
 @RestController
 @RequestMapping("/insurance")
 public class InsuranceController {
-    @Autowired
+    @Resource
     private InsuranceService insuranceService;
 
     @ApiOperation("新增")
@@ -40,7 +37,7 @@ public class InsuranceController {
     @ApiOperation("逻辑删除")
     @DeleteMapping("/{id}")
     public ResponseDTO delete(@PathVariable Integer id) {
-        return this.insuranceService.delete(id);
+        return this.insuranceService.deleteById(id);
     }
 
     @ApiOperation("批量逻辑删除")
@@ -57,40 +54,36 @@ public class InsuranceController {
 
     @ApiOperation("查询")
     @GetMapping("/{id}")
-    public ResponseDTO query(@PathVariable Integer id) {
-        return this.insuranceService.query(id);
+    public ResponseDTO findById(@PathVariable Integer id) {
+        return this.insuranceService.findById(id);
     }
 
     @ApiOperation("查询")
     @GetMapping("/staff/{id}")
-    public ResponseDTO queryByStaffId(@PathVariable Integer id) {
-        return this.insuranceService.queryByStaffId(id);
+    public ResponseDTO findByStaffId(@PathVariable Integer id) {
+        return this.insuranceService.findByStaffId(id);
     }
 
     @ApiOperation("多条件分页查询")
-    @GetMapping
-    @PreAuthorize("hasAnyAuthority('money:insurance:list','money:insurance:search')")
-    public ResponseDTO list(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size, String name, Integer deptId){
-        return this.insuranceService.list(current, size, name,deptId);
+    @PostMapping("/page")
+    public ResponseDTO list(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size, @RequestBody Staff staff){
+        return this.insuranceService.list(current, size, staff);
     }
 
     @ApiOperation("数据导出接口")
-    @GetMapping("/export/{filename}")
-    @PreAuthorize("hasAnyAuthority('money:insurance:export')")
-    public void export(HttpServletResponse response,@PathVariable  String filename) throws IOException {
-         this.insuranceService.export(response,filename);
+    @GetMapping("/export")
+    public ResponseDTO export(HttpServletResponse response) throws IOException {
+        return this.insuranceService.export(response);
     }
 
     @ApiOperation("数据导入接口")
     @PostMapping("/import")
-    @PreAuthorize("hasAnyAuthority('money:insurance:import')")
     public ResponseDTO imp(MultipartFile file) throws IOException {
         return this.insuranceService.imp(file);
     }
 
     @ApiOperation("为员工设置社保")
     @PostMapping("/set")
-    @PreAuthorize("hasAnyAuthority('money:insurance:set')")
     public ResponseDTO setInsurance(@RequestBody Insurance insurance) {
         return this.insuranceService.setInsurance(insurance);
     }

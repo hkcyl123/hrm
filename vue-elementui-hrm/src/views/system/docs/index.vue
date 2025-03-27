@@ -22,19 +22,18 @@
     </el-dialog>
 
     <div style="margin-bottom: 10px">
-      <el-upload v-permission="['system:docs:import']" :action="importApi" :headers="headers" accept="xlsx" :show-file-list="false" :multiple="false"
+      <el-upload :action="importApi" :headers="headers" accept="xlsx" :show-file-list="false" :multiple="false"
                  :on-success="handleImportSuccess"
                  style="display:inline-block;">
-        <el-button  type="success" size="mini"
+        <el-button type="success" size="mini"
         >导入 <i class="el-icon-bottom"></i>
         </el-button>
       </el-upload>
-      <el-button v-permission="['system:docs:export']" type="warning" size="mini" @click="handleExport" style="margin-left: 10px"
+      <el-button type="warning" size="mini" @click="exportData" style="margin-left: 10px"
       >导出 <i class="el-icon-top"></i>
       </el-button>
-      <el-upload v-permission="['system:docs:upload']"
-        :action="uploadApi" :headers="headers" :multiple="false" :show-file-list="false"
-        :on-success="handleUploadSuccess"
+      <el-upload
+        :action="uploadApi" :headers="headers" :multiple="false" :show-file-list="false" :on-success="handleUploadSuccess"
         :limit="1" style="display:inline-block;margin-left: 10px">
         <el-button type="primary" size="mini"
         >上传 <i class="el-icon-circle-plus-outline"></i>
@@ -49,7 +48,7 @@
         title="你确定删除吗？"
         @confirm="handleDeleteBatch"
       >
-        <el-button v-permission="['system:docs:delete']" type="danger" size="mini" slot="reference"
+        <el-button type="danger" size="mini" slot="reference"
         >批量删除 <i class="el-icon-remove-outline"></i>
         </el-button>
       </el-popconfirm>
@@ -75,7 +74,7 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button v-permission="['system:docs:search']" type="primary" @click="search" size="mini">搜索 <i class="el-icon-search"/></el-button>
+          <el-button type="primary" @click="search" size="mini">搜索 <i class="el-icon-search"/></el-button>
           <el-button type="danger" @click="reset" size="mini">重置 <i class="el-icon-refresh-left"/></el-button>
         </el-form-item>
       </el-form>
@@ -83,7 +82,6 @@
     <!------------------ 数据表格 ---------------->
     <div class="common-table">
       <el-table
-        ref="table"
         :data="table.tableData"
         height="85%"
         border
@@ -95,16 +93,16 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="50" align="center"/>
-        <el-table-column prop="name" label="文件名" min-width="180" align="center" fixed/>
+        <el-table-column prop="name" label="文件名" min-width="180" align="center"/>
         <el-table-column prop="type" label="类型" min-width="125" align="center"/>
-        <el-table-column prop="oldName" label="文件原名称" min-width="400" align="center"/>
+        <el-table-column prop="oldName" label="文件原名称" min-width="150" align="center"/>
         <el-table-column prop="size" label="文件大小（KB）" min-width="125" align="center"/>
         <el-table-column prop="staffName" label="上传者" min-width="125" align="center"/>
         <el-table-column prop="createTime" label="上传时间" min-width="150" align="center"/>
         <el-table-column prop="remark" label="备注" min-width="200" align="center"/>
         <el-table-column label="操作" width="280" fixed="right" align="center">
           <template slot-scope="scope">
-            <el-button v-permission="['system:docs:edit']" size="mini" type="primary" @click="handleEdit(scope.row)"
+            <el-button size="mini" type="primary" @click="handleEdit(scope.row)"
             >编辑 <i class="el-icon-edit"></i
             ></el-button>
             <el-popconfirm
@@ -114,10 +112,13 @@
               icon="el-icon-info"
               icon-color="red"
               title="你确定删除吗？"
-              @confirm="handleDelete(scope.row.id)">
-              <el-button v-permission="['system:docs:delete']" size="mini" type="danger" slot="reference">删除 <i class="el-icon-remove-outline"></i></el-button>
+              @confirm="handleDelete(scope.row.id)"
+            >
+              <el-button size="mini" type="danger" slot="reference"
+              >删除 <i class="el-icon-remove-outline"></i
+              ></el-button>
             </el-popconfirm>
-            <el-button v-permission="['system:docs:download']" type="warning" @click="handleDownload(scope.row)">下载 <i class="el-icon-download"/></el-button>
+            <el-button type="warning" @click="download(scope.row.name)">下载 <i class="el-icon-download"/></el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -137,14 +138,15 @@
 <script>
 import {
   deleteBatch,
-  del, download,
-  edit, exp,
+  deleteOne,
+  edit,
+  getDownloadApi,
+  getExportApi,
   getImportApi,
-  list,
+  getList,
   getUploadApi
-} from '@/api/docs'
-import { mapGetters } from 'vuex'
-import { write } from '@/utils/docs'
+} from '../../../api/docs'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Docs',
@@ -169,44 +171,21 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['staff', 'token']),
+    ...mapState('token', ['token']),
     headers () {
-      return { Authorization: 'Bearer ' + this.token }
+      return { token: this.token }
     },
     // 获取导入数据的接口
     importApi () {
       return getImportApi()
     },
     uploadApi () {
-      return getUploadApi(this.staff.id)
-    }
-  },
-  watch: {
-    // 监听table数据对象，解决table列fixed对齐错误的问题
-    'table.tableData': function () {
-      this.doLayout()
+      return getUploadApi()
     }
   },
   methods: {
-    handleExport () {
-      const filename = '文件信息表'
-      exp(filename).then(response => {
-        write(response, filename + '.xlsx')
-      })
-    },
-    handleDownload (row) {
-      download(row.name).then(response => {
-        write(response, row.oldName)
-      })
-    },
-    // 重新渲染table组件
-    doLayout () {
-      this.$nextTick(() => {
-        this.$refs.table.doLayout()
-      })
-    },
     handleDelete (id) {
-      del(id).then(
+      deleteOne(id).then(
         response => {
           if (response.code === 200) {
             this.$message.success('删除成功！')
@@ -263,7 +242,7 @@ export default {
     },
     // 将数据渲染到模板
     loading () {
-      list({
+      getList({
         current: this.table.pageConfig.current,
         size: this.table.pageConfig.size,
         oldName: this.searchForm.formData.oldName,
@@ -276,6 +255,10 @@ export default {
           this.$message.error(response.message)
         }
       })
+    },
+    // 导出数据
+    exportData () {
+      window.open(getExportApi())
     },
     handleImportSuccess (response) {
       if (response.code === 200) {
@@ -292,6 +275,9 @@ export default {
       } else {
         this.$message.error('文件上传失败！')
       }
+    },
+    download (name) {
+      window.open(getDownloadApi() + name)
     }
   },
   created () {

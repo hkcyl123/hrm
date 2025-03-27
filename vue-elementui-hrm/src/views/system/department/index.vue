@@ -33,16 +33,15 @@
       :title="dialogSubForm.type === 'add' ? '新增子部门' : '更新子部门'"
       :visible.sync="dialogSubForm.isShow"
     >
-      <el-form ref="dialogSubForm" label-width="140px" :model="dialogSubForm.formData" size="mini"
-               :rules="dialogSubForm.rules">
+      <el-form ref="dialogSubForm" label-width="140px" :model="dialogSubForm.formData" size="mini" :rules="dialogSubForm.rules">
 
-        <el-form-item label="名称" style="width: 350px" prop="name">
+        <el-form-item label="名称"  style="width: 350px" prop="name">
           <el-input
             placeholder="请输入部门名称"
             v-model.trim="dialogSubForm.formData.name"
           />
         </el-form-item>
-        <el-form-item label="出勤" style="height: 80px">
+        <el-form-item label="出勤" style="height: 80px" >
           <el-form-item label="早上" label-width="40px" style="height: 30px">
             <el-form-item style="display:inline-block" prop="morStartTime">
               <el-time-select
@@ -80,7 +79,7 @@
             </el-form-item>
           </el-form-item>
         </el-form-item>
-        <el-form-item label="备注" style="width:450px" prop="remark">
+        <el-form-item label="备注"  style="width:450px" prop="remark">
           <el-input
             type="textarea"
             placeholder="请输入"
@@ -167,16 +166,16 @@
                            :label="item.message"/>
               </el-select>
             </el-form-item>
-            <el-form-item label="计费类型">
+            <el-form-item label="计数类型">
               <el-radio-group v-model="settingDialog.overtimeForm.formData.countType"
-                              :disabled="settingDialog.overtimeForm.formData.timeOffFlag===1">
+                              :disabled="settingDialog.overtimeForm.formData.status===0">
                 <el-radio v-for="(item,index) in settingDialog.overtimeForm.countTypeList" :key="index"
                           :label="index">{{ item }}
                 </el-radio>
               </el-radio-group>
             </el-form-item>
-            <!-- 只有休息日加班，才能选择是否调休 -->
-            <el-form-item label="是否调休" v-if="settingDialog.overtimeForm.overtimeType.code === 2">
+            <!-- 只有休息日加班，公司才能选择是否补休 -->
+            <el-form-item label="是否补休" v-if="settingDialog.overtimeForm.overtimeType.code === 2">
               <el-radio-group v-model="settingDialog.overtimeForm.formData.timeOffFlag"
                               @change="changeTimeOff">
                 <el-radio :label="0">不调休</el-radio>
@@ -210,19 +209,19 @@
         <el-button type="primary" @click="saveSetting">保存</el-button>
       </div>
     </el-dialog>
-    <!------------------------ 操作 ---------------------->
+
     <div style="margin-bottom: 10px">
-      <el-upload v-permission="['system:department:import']" :action="importApi" :headers="headers" accept="xlsx" :show-file-list="false"
+      <el-upload :action="importApi" :headers="headers" accept="xlsx" :show-file-list="false"
                  :on-success="handleImportSuccess" :multiple="false"
                  style="display:inline-block;">
         <el-button type="success" size="mini"
         >导入 <i class="el-icon-bottom"></i>
         </el-button>
       </el-upload>
-      <el-button v-permission="['system:department:export']" type="warning" size="mini" @click="handleExport" style="margin-left: 10px"
+      <el-button type="warning" size="mini" @click="exportData" style="margin-left: 10px"
       >导出 <i class="el-icon-top"></i>
       </el-button>
-      <el-button v-permission="['system:department:add']" type="primary" @click="handleAdd" size="mini"
+      <el-button type="primary" @click="handleAdd" size="mini"
       >新增 <i class="el-icon-circle-plus-outline"></i>
       </el-button>
       <el-popconfirm
@@ -234,7 +233,7 @@
         title="你确定删除吗？"
         @confirm="handleDeleteBatch"
       >
-        <el-button v-permission="['system:department:delete']" type="danger" size="mini" slot="reference"
+        <el-button type="danger" size="mini" slot="reference"
         >批量删除 <i class="el-icon-remove-outline"></i>
         </el-button>
       </el-popconfirm>
@@ -252,7 +251,7 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button v-permission="['system:department:search']" type="primary" @click="search" size="mini">搜索 <i class="el-icon-search"/></el-button>
+          <el-button type="primary" @click="search" size="mini">搜索 <i class="el-icon-search"/></el-button>
           <el-button type="danger" @click="reset" size="mini">重置 <i class="el-icon-refresh-left"/></el-button>
         </el-form-item>
       </el-form>
@@ -280,10 +279,10 @@
         <el-table-column prop="remark" label="备注" min-width="200" align="center"/>
         <el-table-column label="操作" width="280" fixed="right" align="center">
           <template slot-scope="scope">
-            <el-button v-permission="['system:department:edit']" size="mini" v-if="scope.row.parentId === 0" type="primary" @click="handleEdit(scope.row)"
+            <el-button size="mini" v-if="scope.row.parentId === 0" type="primary" @click="handleEdit(scope.row)"
             >编辑 <i class="el-icon-edit"></i
             ></el-button>
-            <el-button v-permission="['system:department:edit']" size="mini" v-if="scope.row.parentId !== 0" type="primary" @click="handleSubEdit(scope.row)"
+            <el-button size="mini" v-if="scope.row.parentId !== 0" type="primary" @click="handleSubEdit(scope.row)"
             >编辑 <i class="el-icon-edit"></i
             ></el-button>
             <el-popconfirm
@@ -295,13 +294,13 @@
               title="你确定删除吗？"
               @confirm="handleDelete(scope.row.id)"
             >
-              <el-button v-permission="['system:department:delete']" size="mini" type="danger" slot="reference"
+              <el-button size="mini" type="danger" slot="reference"
               >删除 <i class="el-icon-remove-outline"></i
               ></el-button>
             </el-popconfirm>
-            <el-button v-permission="['system:department:add']" type="warning" v-if="scope.row.parentId === 0" @click="handleSubAdd(scope.row.id)">新增部门 <i
+            <el-button type="warning" v-if="scope.row.parentId === 0" @click="handleSubAdd(scope.row.id)">新增部门 <i
               class="el-icon-circle-plus-outline"/></el-button>
-            <el-button v-permission="['system:department:setting']" type="info" v-if="scope.row.parentId !== 0" @click="handleSetting(scope.row)">部门设置 <i
+            <el-button type="info" v-if="scope.row.parentId !== 0" @click="handleSetting(scope.row)">部门设置 <i
               class="el-icon-setting"/></el-button>
           </template>
         </el-table-column>
@@ -323,20 +322,19 @@
 import {
   add,
   deleteBatch,
-  del,
+  deleteOne,
   edit,
+  getExportApi,
   getImportApi,
-  list,
-  exp
-} from '@/api/dept'
+  getList
+} from '../../../api/dept'
 
-import { queryAll as queryAllLeave, queryByDeptIdAndTypeNum as queryLeaveByDeptIdAndTypeNum, setLeave } from '@/api/leave'
+import { getAll, getLeave, setLeave } from '../../../api/leave'
 
-import { queryByDeptIdAndTypeNum as queryDeductByDeptIdAndTypeNum, setSalaryDeduct, queryAll as queryAllDeduct } from '@/api/salaryDeduct'
+import { getSalaryDeduct, setSalaryDeduct, getAll as getAllDeductTypes } from '../../../api/salaryDeduct'
 
-import { queryByDeptIdAndTypeNum as queryOvertimeByDeptIdAndTypeNum, setOvertime, queryAll as queryAllOvertime } from '@/api/overtime'
-import { mapGetters } from 'vuex'
-import { write } from '@/utils/docs'
+import { getOvertime, setOvertime, getAll as getAllOvertimeTypes } from '../../../api/overtime'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Department',
@@ -483,9 +481,9 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['token']),
+    ...mapState('token', ['token']),
     headers () {
-      return { Authorization: 'Bearer ' + this.token }
+      return { token: this.token }
     },
     // 获取导入数据的接口
     importApi () {
@@ -502,7 +500,7 @@ export default {
     changeOvertimeType (typeNum) {
       this.$refs.overtimeForm.clearValidate()
       this.settingDialog.overtimeForm.overtimeType = this.settingDialog.overtimeForm.overtimeTypeList.find(item => item.code === typeNum)
-      queryOvertimeByDeptIdAndTypeNum(this.deptId, typeNum).then(response => {
+      getOvertime(this.deptId, typeNum).then(response => {
         if (response.code === 200) {
           this.settingDialog.overtimeForm.formData = response.data
         } else {
@@ -516,7 +514,7 @@ export default {
     },
     changeDeductType (typeNum) {
       this.$refs.deductForm.clearValidate()
-      queryDeductByDeptIdAndTypeNum(this.deptId, typeNum).then(response => {
+      getSalaryDeduct(this.deptId, typeNum).then(response => {
         if (response.code === 200) {
           this.settingDialog.deductForm.formData = response.data
         } else {
@@ -528,7 +526,7 @@ export default {
     },
     changeLeaveType (typeNum) {
       this.$refs.leaveForm.clearValidate()
-      queryLeaveByDeptIdAndTypeNum(this.deptId, typeNum).then(response => {
+      getLeave(this.deptId, typeNum).then(response => {
         if (response.code === 200) {
           this.settingDialog.leaveForm.formData = response.data
         } else {
@@ -586,38 +584,73 @@ export default {
     },
     clickTab (tab) {
       this.settingDialog.activeTabLabel = tab.label
+      if (this.settingDialog.activeTabName === 'leave') {
+        this.getAllLeaveType()
+      } else if (this.settingDialog.activeTabName === 'deduct') {
+        this.getAllDeductType()
+      } else if (this.settingDialog.activeTabName === 'overtime') {
+        this.getAllOvertimeType()
+      }
     },
     handleSetting (row) {
       this.deptId = row.id
       this.settingDialog.isShow = true
       if (this.settingDialog.activeTabName === 'leave') {
         this.settingDialog.leaveForm.formData = {}
+        this.getAllLeaveType()
       } else if (this.settingDialog.activeTabName === 'deduct') {
         this.settingDialog.deductForm.formData = {}
+        this.getAllDeductType()
       } else {
         this.settingDialog.overtimeForm.formData = {}
+        this.getAllOvertimeType()
       }
+    },
+    getAllOvertimeType () {
+      getAllOvertimeTypes().then(response => {
+        if (response.code === 200) {
+          this.settingDialog.overtimeForm.overtimeTypeList = response.data
+        } else {
+          this.$message.error('获取数据失败！')
+        }
+      })
+    },
+    getAllDeductType () {
+      getAllDeductTypes().then(response => {
+        if (response.code === 200) {
+          this.settingDialog.deductForm.deductTypeList = response.data
+        } else {
+          this.$message.error('获取数据失败！')
+        }
+      })
+    },
+    getAllLeaveType () {
+      getAll().then(response => {
+        if (response.code === 200) {
+          this.settingDialog.leaveForm.leaveTypeList = response.data
+        } else {
+          this.$message.error('获取数据失败！')
+        }
+      })
     },
     // 点击新增按钮，弹出对话框
     handleAdd () {
       this.dialogForm.isShow = true
       this.dialogForm.type = 'add'
-      this.dialogForm.formData = { parentId: 0 }
+      this.dialogForm.formData = {}
     },
     handleSubAdd (id) {
       this.dialogSubForm.isShow = true
       this.dialogSubForm.type = 'add'
       this.dialogSubForm.formData = { parentId: id }
-      this.$nextTick(() => {
-        this.$refs.dialogSubForm.clearValidate()
-      })
+      this.$refs.dialogSubForm.clearValidate()
     },
     handleDelete (id) {
-      del(id).then(
+      deleteOne(id).then(
         response => {
           if (response.code === 200) {
             this.$message.success('删除成功！')
-            this.search()
+            this.loading()
           } else {
             this.$message.error('删除失败！')
           }
@@ -628,7 +661,7 @@ export default {
       deleteBatch(this.ids).then(response => {
         if (response.code === 200) {
           this.$message.success('批量删除成功！')
-          this.search()
+          this.loading()
         } else {
           this.$message.error('批量删除失败！')
         }
@@ -637,15 +670,13 @@ export default {
     handleEdit (row) {
       this.dialogForm.isShow = true
       this.dialogForm.type = 'edit'
-      this.dialogForm.formData = row
+      this.dialogForm.formData = { id: row.id, name: row.name, remark: row.remark }
     },
     handleSubEdit (row) {
       this.dialogSubForm.isShow = true
       this.dialogSubForm.type = 'edit'
       this.dialogSubForm.formData = row
-      this.$nextTick(() => {
-        this.$refs.dialogSubForm.clearValidate()
-      })
+      this.$refs.dialogSubForm.clearValidate()
     },
     confirm () {
       // 通过type来判断是新增还是编辑
@@ -654,7 +685,7 @@ export default {
           if (response.code === 200) {
             this.$message.success('添加成功！')
             this.dialogForm.isShow = false
-            this.search()
+            this.loading()
           } else {
             this.$message.error('添加失败！')
           }
@@ -664,7 +695,7 @@ export default {
           if (response.code === 200) {
             this.$message.success('修改成功！')
             this.dialogForm.isShow = false
-            this.search()
+            this.loading()
           } else {
             this.$message.error('修改失败！')
           }
@@ -680,7 +711,7 @@ export default {
               if (response.code === 200) {
                 this.$message.success('添加成功！')
                 this.dialogSubForm.isShow = false
-                this.search()
+                this.loading()
               } else {
                 this.$message.error('添加失败！')
               }
@@ -696,7 +727,7 @@ export default {
               if (response.code === 200) {
                 this.$message.success('修改成功！')
                 this.dialogSubForm.isShow = false
-                this.search()
+                this.loading()
               } else {
                 this.$message.error('修改失败！')
               }
@@ -708,59 +739,27 @@ export default {
       }
     },
     search () {
-      list({
-        current: this.table.pageConfig.current,
-        size: this.table.pageConfig.size,
-        name: this.searchForm.formData.name
-      }).then(response => {
-        if (response.code === 200) {
-          this.table.tableData = response.data.list
-          this.table.pageConfig.total = response.data.total
-        } else {
-          this.$message.error(response.message)
-        }
-      })
+      this.loading()
     },
     // 重置搜索表单
     reset () {
       this.searchForm.formData = {}
-      this.search()
+      this.loading()
     },
     handleSizeChange (size) {
       this.table.pageConfig.size = size
-      this.search()
+      this.loading()
     },
     handleCurrentChange (current) {
       this.table.pageConfig.current = current
-      this.search()
+      this.loading()
     },
     handleSelectionChange (list) {
       this.ids = list.map(item => item.id)
     },
     // 将数据渲染到模板
     loading () {
-      queryAllOvertime().then(response => {
-        if (response.code === 200) {
-          this.settingDialog.overtimeForm.overtimeTypeList = response.data
-        } else {
-          this.$message.error('获取数据失败！')
-        }
-      })
-      queryAllDeduct().then(response => {
-        if (response.code === 200) {
-          this.settingDialog.deductForm.deductTypeList = response.data
-        } else {
-          this.$message.error('获取数据失败！')
-        }
-      })
-      queryAllLeave().then(response => {
-        if (response.code === 200) {
-          this.settingDialog.leaveForm.leaveTypeList = response.data
-        } else {
-          this.$message.error('获取数据失败！')
-        }
-      })
-      list({
+      getList({
         current: this.table.pageConfig.current,
         size: this.table.pageConfig.size,
         name: this.searchForm.formData.name
@@ -774,16 +773,13 @@ export default {
       })
     },
     // 导出数据
-    handleExport () {
-      const filename = '部门信息表'
-      exp(filename).then(response => {
-        write(response, filename + '.xlsx')
-      })
+    exportData () {
+      window.open(getExportApi())
     },
     handleImportSuccess (response) {
       if (response.code === 200) {
         this.$message.success('数据导入成功！')
-        this.search()
+        this.loading()
       } else {
         this.$message.error('数据导入失败！')
       }

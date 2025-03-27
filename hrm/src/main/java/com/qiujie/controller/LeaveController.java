@@ -4,8 +4,6 @@ import com.qiujie.entity.Leave;
 import com.qiujie.dto.ResponseDTO;
 import com.qiujie.service.LeaveService;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -17,13 +15,12 @@ import java.util.List;
  * 请假表 前端控制器
  * </p>
  *
- * @author qiujie
- * @since 2022-03-27
+
  */
 @RestController
 @RequestMapping("/leave")
 public class LeaveController {
-    @Autowired
+    @Resource
     private LeaveService leaveService;
 
     @ApiOperation("新增")
@@ -35,7 +32,7 @@ public class LeaveController {
     @ApiOperation("逻辑删除")
     @DeleteMapping("/{id}")
     public ResponseDTO delete(@PathVariable Integer id) {
-        return this.leaveService.delete(id);
+        return this.leaveService.deleteById(id);
     }
 
     @ApiOperation("批量逻辑删除")
@@ -52,20 +49,19 @@ public class LeaveController {
 
     @ApiOperation("查询")
     @GetMapping("/{id}")
-    public ResponseDTO query(@PathVariable Integer id) {
-        return this.leaveService.query(id);
+    public ResponseDTO findById(@PathVariable Integer id) {
+        return this.leaveService.findById(id);
     }
 
 
     @ApiOperation("获取")
     @GetMapping("/{deptId}/{typeNum}")
-    public ResponseDTO queryByDeptIdAndTypeNum(@PathVariable Integer deptId, @PathVariable Integer typeNum) {
-        return this.leaveService.queryByDeptIdAndTypeNum(deptId, typeNum);
+    public ResponseDTO find(@PathVariable Integer deptId, @PathVariable Integer typeNum) {
+        return this.leaveService.find(deptId, typeNum);
     }
 
     @ApiOperation("设置假期")
     @PostMapping("/set")
-    @PreAuthorize("hasAnyAuthority('system:department:setting')")
     public ResponseDTO setLeave(@RequestBody Leave leave) {
         return this.leaveService.setLeave(leave);
     }
@@ -73,14 +69,14 @@ public class LeaveController {
 
     @ApiOperation("查询")
     @GetMapping("/dept/{id}")
-    public ResponseDTO queryByDeptId(@PathVariable Integer id) {
-        return this.leaveService.queryByDeptId(id);
+    public ResponseDTO findByDeptId(@PathVariable Integer id) {
+        return this.leaveService.findByDeptId(id);
     }
 
     @ApiOperation("获取所有")
     @GetMapping("/all")
-    public ResponseDTO queryAll() {
-        return this.leaveService.queryAll();
+    public ResponseDTO findAll() {
+        return this.leaveService.findAll();
     }
 
 }

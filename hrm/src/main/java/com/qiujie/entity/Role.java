@@ -14,8 +14,7 @@ import java.sql.Timestamp;
  * 
  * </p>
  *
- * @author qiujie
- * @since 2022-01-27
+
  */
 @Data
 @TableName("per_role")

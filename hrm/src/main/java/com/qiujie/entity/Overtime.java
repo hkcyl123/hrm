@@ -17,8 +17,7 @@ import java.sql.Timestamp;
  * 加班表
  * </p>
  *
- * @author qiujie
- * @since 2022-03-28
+
  */
 @Getter
 @Setter
@@ -57,7 +56,6 @@ public class Overtime implements Serializable {
     @ApiModelProperty("0不调休，1调休，默认0")
     @TableField("is_time_off")
     private Integer timeOffFlag;
-
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @ApiModelProperty("创建时间")

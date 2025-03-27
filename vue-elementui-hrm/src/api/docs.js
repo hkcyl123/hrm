@@ -19,7 +19,7 @@ export const add = (data) => {
  * @param id
  * @returns {AxiosPromise}
  */
-export const del = (id) => {
+export const deleteOne = (id) => {
   return request({
     url: url + '/' + id,
     method: 'delete'
@@ -41,7 +41,7 @@ export const edit = (data) => {
   })
 }
 
-export const list = (params) => {
+export const getList = (params) => {
   return request({
     url: url,
     method: 'get',
@@ -49,36 +49,22 @@ export const list = (params) => {
   })
 }
 
-export const download = (filename) => {
-  return request({
-    url: url + '/download/' + filename,
-    method: 'get',
-    responseType: 'blob'
-  })
-}
-
-export const getAvatar = (filename) => {
-  return request({
-    url: url + '/avatar/' + filename,
-    method: 'get',
-    responseType: 'blob'
-  })
-}
-
-export const exp = (filename) => {
-  return request({
-    url: url + '/export/' + filename,
-    method: 'get',
-    responseType: 'blob'
-  })
-}
-
 // 数据导入
 export const getImportApi = () => {
-  return process.env.VUE_APP_HOST + ':' + process.env.VUE_APP_PORT + url + '/import'
+  return 'http://localhost:' + process.env.VUE_APP_PORT + url + '/import'
+}
+
+// 数据导出
+export const getExportApi = () => {
+  return 'http://localhost:' + process.env.VUE_APP_PORT + url + '/export'
 }
 
 // 文件上传
-export const getUploadApi = (id) => {
-  return process.env.VUE_APP_HOST + ':' + process.env.VUE_APP_PORT + url + '/upload/' + id
+export const getUploadApi = () => {
+  return 'http://localhost:' + process.env.VUE_APP_PORT + url + '/upload'
+}
+
+// 文件下载
+export const getDownloadApi = () => {
+  return 'http://localhost:' + process.env.VUE_APP_PORT + url + '/download/'
 }

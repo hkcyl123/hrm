@@ -5,7 +5,7 @@ import com.auth0.jwt.JWT;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.qiujie.dto.Response;
 import com.qiujie.dto.ResponseDTO;
 import com.qiujie.entity.Menu;
@@ -13,15 +13,10 @@ import com.qiujie.entity.RoleMenu;
 import com.qiujie.entity.StaffRole;
 import com.qiujie.enums.BusinessStatusEnum;
 import com.qiujie.exception.ServiceException;
-import com.qiujie.mapper.MenuMapper;
 import com.qiujie.util.HutoolExcelUtil;
-import io.swagger.models.auth.In;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -29,115 +24,30 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * <p>
- * 服务类
- * </p>
- *
- * @author qiujie
- * @since 2022-02-28
- */
-@Service
-public class MenuService extends ServiceImpl<MenuMapper, Menu> {
+public interface MenuService extends IService<Menu> {
 
-    @Autowired
-    private MenuMapper menuMapper;
+    public ResponseDTO add(Menu menu);
 
-
-    public ResponseDTO add(Menu menu) {
-        if (save(menu)) {
-            return Response.success();
-        }
-        return Response.error();
-    }
-
-    public ResponseDTO delete(Integer id) {
-        if (removeById(id)) {
-            return Response.success();
-        }
-        return Response.error();
-    }
+    public ResponseDTO deleteById(Integer id);
 
     @Transactional(rollbackFor = Exception.class)
-    public ResponseDTO deleteBatch(List<Integer> ids) {
-        if (removeBatchByIds(ids)) {
-            return Response.success();
-        }
-        return Response.error();
-    }
+    public ResponseDTO deleteBatch(List<Integer> ids);
 
 
-    public ResponseDTO edit(Menu menu) {
-        if (updateById(menu)) {
-            return Response.success();
-        }
-        return Response.error();
-    }
+    public ResponseDTO edit(Menu menu);
 
 
-    public ResponseDTO query(Integer id) {
-        Menu menu = getById(id);
-        if (menu != null) {
-            return Response.success(menu);
-        }
-        return Response.error();
-    }
+    public ResponseDTO findById(Integer id);
 
     /**
      * 查找所有菜单
      *
      * @return
      */
-    public ResponseDTO queryAll() {
-        List<Menu> list = list(new QueryWrapper<Menu>().eq("status",1));
-        // 为父级菜单设置子菜单
-        // 一级菜单
-        List<Menu> firstList = list.stream().parallel()
-                .filter(menu -> menu.getLevel() == 0).toList();
-        for (Menu firstMenu : firstList) {
-            // 二级菜单
-            List<Menu> secondList = list.stream().parallel()
-                    .filter(menu -> Objects.equals(menu.getParentId(), firstMenu.getId())).toList();
-            firstMenu.setChildren(secondList);
-            for (Menu secondMenu : secondList) {
-                // 权限点
-                List<Menu> thirdList = list.stream().parallel()
-                        .filter(menu -> Objects.equals(menu.getParentId(), secondMenu.getId())).toList();
-                secondMenu.setChildren(thirdList);
-            }
-        }
-        return Response.success(firstList);
-    }
+    public ResponseDTO findAll();
 
 
-    public ResponseDTO list(Integer current, Integer size, String name) {
-        IPage<Menu> config = new Page<>(current, size);
-        QueryWrapper<Menu> wrapper = new QueryWrapper<>();
-        if (name != "" && name != null) {
-            wrapper.like("name", name);
-        }
-        wrapper.eq("level", 0);
-        IPage<Menu> page = page(config, wrapper);
-        List<Menu> list = list(new QueryWrapper<Menu>().ne("level", 0));
-        // 菜单
-        List<Menu> firstList = page.getRecords();
-        for (Menu firstMenu : firstList) {
-            // 设置子菜单
-            List<Menu> secondList = list.stream().filter(menu -> Objects.equals(menu.getParentId(), firstMenu.getId())).toList();
-            firstMenu.setChildren(secondList);
-            for (Menu secondMenu : secondList) {
-                // 设置子菜单
-                List<Menu> thirdList = list.stream().filter(menu -> Objects.equals(menu.getParentId(), secondMenu.getId())).toList();
-                secondMenu.setChildren(thirdList);
-            }
-        }
-        // 将响应数据填充到map中
-        Map map = new HashMap();
-        map.put("pages", page.getPages());
-        map.put("total", page.getTotal());
-        map.put("list", firstList);
-        return Response.success(map);
-    }
+    public ResponseDTO list(Integer current, Integer size, String name);
 
     /**
      * 数据导出
@@ -145,10 +55,7 @@ public class MenuService extends ServiceImpl<MenuMapper, Menu> {
      * @param response
      * @return
      */
-    public void export(HttpServletResponse response, String filename) throws IOException {
-        List<Menu> list = list();
-        HutoolExcelUtil.writeExcel(response, list, filename, Menu.class);
-    }
+    public ResponseDTO export(HttpServletResponse response) throws IOException;
 
     /**
      * 数据导入
@@ -157,36 +64,24 @@ public class MenuService extends ServiceImpl<MenuMapper, Menu> {
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
-    public ResponseDTO imp(MultipartFile file) throws IOException {
-        InputStream inputStream = file.getInputStream();
-        List<Menu> list = HutoolExcelUtil.readExcel(inputStream, 1, Menu.class);
-        // IService接口中的方法.批量插入数据
-        if (saveBatch(list)) {
-            return Response.success();
-        }
-        return Response.error();
-    }
+    public ResponseDTO imp(MultipartFile file) throws IOException;
 
-    public ResponseDTO queryByStaffId(Integer id) {
-        List<Menu> list = this.menuMapper.queryByStaffId(id);
-        // 一级菜单
-        List<Menu> firstList = list.stream().parallel()
-                .filter(menu -> menu.getLevel() == 0).toList();
-        for (Menu firstMenu : firstList) {
-            // 二级菜单
-            List<Menu> secondList = list.stream().parallel()
-                    .filter(menu -> Objects.equals(menu.getParentId(), firstMenu.getId())).toList();
-            firstMenu.setChildren(secondList);
-        }
-        return Response.success(firstList);
-    }
+    /**
+     * 为父级菜单设置子菜单，使用流来处理数据，并返回父级菜单
+     *
+     * @param list
+     * @return
+     */
+    public List<Menu> setSubMenu(List<Menu> list);
+
+    public ResponseDTO getStaffMenu(HttpServletRequest request);
 
 
-    public ResponseDTO queryPermission(Integer id){
-        return Response.success(this.menuMapper.queryPermission(id));
-    }
+    /**
+     * 通过员工id查询菜单,使用流处理数据，减少对数据库的查询次数
+     *
+     * @param id
+     * @return
+     */
+    public ResponseDTO getStaffMenuPlus(Integer id) ;
 }
-
-
-
-

@@ -18,8 +18,7 @@ import java.sql.Timestamp;
  *
  * </p>
  *
- * @author qiujie
- * @since 2022-04-05
+
  */
 @Getter
 @Setter
@@ -47,13 +46,9 @@ public class StaffLeave implements Serializable {
     @TableField("start_date")
     private Date startDate;
 
-    @ApiModelProperty("0待审核，1审核通过，2驳回，3撤销，4审核中")
+    @ApiModelProperty("0未审核，1审核通过，2驳回，3撤销")
     @TableField("status")
     private AuditStatusEnum status;
-
-    @ApiModelProperty("审批意见")
-    @TableField("audit_remark")
-    private String auditRemark;
 
     @TableField("remark")
     private String remark;

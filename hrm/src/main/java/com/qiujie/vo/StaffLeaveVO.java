@@ -11,8 +11,7 @@ import java.sql.Date;
 import java.sql.Timestamp;
 
 /**
- * @Author qiujie
- * @Date 2022/4/5
+
  * @Version 1.0
  */
 
@@ -53,9 +52,6 @@ public class StaffLeaveVO implements Serializable {
 
     @ApiModelProperty("0未审核，1审核通过，2驳回，3撤销")
     private AuditStatusEnum status;
-
-    @ApiModelProperty("审批意见")
-    private String auditRemark;
 
     private String remark;
 }

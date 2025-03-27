@@ -8,8 +8,7 @@ import com.qiujie.entity.SalaryDeduct;
  * 工资扣除表 Mapper 接口
  * </p>
  *
- * @author qiujie
- * @since 2022-03-27
+
  */
 
 

@@ -18,7 +18,7 @@ export const add = (data) => {
  * @param id
  * @returns {AxiosPromise}
  */
-export const del = (id) => {
+export const deleteOne = (id) => {
   return request({
     url: url + '/' + id, method: 'delete'
   })
@@ -36,7 +36,7 @@ export const edit = (data) => {
   })
 }
 
-export const list = (params) => {
+export const getList = (params) => {
   return request({
     url: url, method: 'get', params
   })
@@ -48,15 +48,12 @@ export const setSalary = (data) => {
   })
 }
 
-export const exp = (month, filename) => {
-  return request({
-    url: url + '/export/' + month + '/' + filename,
-    method: 'get',
-    responseType: 'blob'
-  })
-}
-
 // 数据导入
 export const getImportApi = () => {
-  return process.env.VUE_APP_HOST + ':' + process.env.VUE_APP_PORT + url + '/import'
+  return 'http://localhost:' + process.env.VUE_APP_PORT + url + '/import'
+}
+
+// 数据导出
+export const getExportApi = (month) => {
+  return 'http://localhost:' + process.env.VUE_APP_PORT + url + '/export/' + month
 }

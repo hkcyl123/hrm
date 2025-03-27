@@ -8,8 +8,7 @@ import com.qiujie.entity.Overtime;
  * 加班表 Mapper 接口
  * </p>
  *
- * @author qiujie
- * @since 2022-03-28
+
  */
 
 public interface OvertimeMapper extends BaseMapper<Overtime> {

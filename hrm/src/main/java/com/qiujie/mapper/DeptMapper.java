@@ -13,8 +13,7 @@ import java.util.List;
  * Mapper 接口
  * </p>
  *
- * @author qiujie
- * @since 2022-03-07
+
  */
 public interface DeptMapper extends BaseMapper<Dept> {
 
@@ -24,14 +23,15 @@ public interface DeptMapper extends BaseMapper<Dept> {
     /**
      * 查找所有子部门
      *
+     * @return
      */
     @Select("select * from sys_dept where is_deleted = 0 and parent_id != 0")
-    List<Dept> queryAllSub();
+    List<Dept> findSubDept();
 
     /**
      * 查找员工所在的部门
      */
     @Select("select sd.* from sys_dept sd right join sys_staff ss on sd.id = ss.dept_id where ss.is_deleted = 0 and ss.id = #{id} ")
-    Dept queryByStaffId(@Param("id") Integer id);
+    Dept findDeptByStaffId(@Param("id") Integer id);
 
 }

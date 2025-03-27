@@ -1,16 +1,16 @@
 <template>
   <el-container style="height: 100%">
     <el-aside width="auto" style="box-shadow: 2px 0 6px rgb(0 21 41 / 35%)">
+      <common-aside/>
       <!-- 引入侧边栏 -->
-      <Aside/>
     </el-aside>
     <el-container>
       <el-header>
+        <common-header/>
         <!-- 引入顶栏 -->
-        <Header/>
       </el-header>
       <!-- 引入标签栏 -->
-      <Tag/>
+      <common-tag/>
       <el-main>
         <router-view/>
         <!-- 路由视图 -->
@@ -20,17 +20,17 @@
 </template>
 
 <script>
-
-import Aside from '../components/Aside.vue'
-import Header from '../components/Header.vue'
-import Tag from '../components/Tag.vue'
+// @ is an alias to /src
+import CommonAside from '../components/CommonAside'
+import CommonHeader from '../components/CommonHeader'
+import CommonTag from '../components/CommonTag'
 
 export default {
   name: 'Main',
   components: {
-    Aside,
-    Header,
-    Tag
+    CommonAside,
+    CommonHeader,
+    CommonTag
   }
 }
 </script>

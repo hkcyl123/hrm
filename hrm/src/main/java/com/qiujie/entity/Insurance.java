@@ -16,8 +16,7 @@ import java.sql.Timestamp;
  *
  * </p>
  *
- * @author qiujie
- * @since 2022-03-24
+
  */
 @Getter
 @Setter
@@ -81,6 +80,10 @@ public class Insurance implements Serializable {
     @ApiModelProperty("社保备注")
     @TableField("social_remark")
     private String socialRemark;
+
+    @ApiModelProperty("0未缴纳，1已缴纳，默认0")
+    @TableField("status")
+    private Integer status;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     @ApiModelProperty("创建时间")

@@ -2,7 +2,6 @@ package com.qiujie.controller;
 
 import com.qiujie.dto.ResponseDTO;
 import com.qiujie.service.HomeService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -11,8 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 
 /**
- * @Author qiujie
- * @Date 2022/2/27
+
  * @Version 1.0
  */
 
@@ -20,31 +18,32 @@ import javax.annotation.Resource;
 @RequestMapping("/home")
 public class HomeController {
 
-    @Autowired
+    @Resource
     private HomeService homeService;
 
     @GetMapping("/staff")
-    public ResponseDTO queryStaff() {
-        return this.homeService.queryStaff();
+    public ResponseDTO getStaffData() {
+        return this.homeService.getStaffData();
     }
 
     @GetMapping("/count")
-    public ResponseDTO queryCount() {
-        return this.homeService.queryCount();
+    public ResponseDTO getCountData() {
+        return this.homeService.getCountData();
     }
 
     @GetMapping("/city")
-    public ResponseDTO queryCity() {
-        return this.homeService.queryCity();
+    public ResponseDTO getCityData() {
+        return this.homeService.getCityData();
     }
 
     @GetMapping("/attendance")
-    public ResponseDTO queryAttendance(@RequestParam Integer id, String month) {
-        return this.homeService.queryAttendance(id, month);
+    public ResponseDTO getAttendanceData(@RequestParam Integer id, String month) {
+        return this.homeService.getAttendanceData(id, month);
     }
+
     @GetMapping("/department")
-    public ResponseDTO queryDepartment() {
-        return this.homeService.queryDepartment();
+    public ResponseDTO getDepartmentData() {
+        return this.homeService.getDepartmentData();
     }
 
 }

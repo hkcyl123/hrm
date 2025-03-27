@@ -41,6 +41,12 @@ public class ResponseDTO {
         this.message = e.getMessage();
     }
 
+    public ResponseDTO(Object data){
+        this.code = 200;
+        this.message = "成功";
+        this.data = data;
+    }
+
     public ResponseDTO(BaseEnum<T> e, Object data){
         this.code = e.getCode();
         this.message = e.getMessage();

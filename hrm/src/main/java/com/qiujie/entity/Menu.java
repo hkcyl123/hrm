@@ -5,8 +5,6 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
-
-import java.io.Serial;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
@@ -21,15 +19,13 @@ import lombok.Data;
  * 
  * </p>
  *
- * @author qiujie
- * @since 2022-02-28
+
  */
 @Data
 @TableName("per_menu")
 @ApiModel(value = "Menu对象", description = "")
 public class Menu implements Serializable {
 
-    @Serial
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty("菜单id")
@@ -47,21 +43,13 @@ public class Menu implements Serializable {
     @TableField("icon")
     private String icon;
 
-    @ApiModelProperty("权限标识")
-    @TableField("permission")
-    private String permission;
+    @ApiModelProperty("菜单路径")
+    @TableField("path")
+    private String path;
 
     @ApiModelProperty("父菜单id，0代表根菜单")
     @TableField("parent_id")
     private Integer parentId;
-
-    @ApiModelProperty("0一级菜单，1二级菜单，2权限点")
-    @TableField("level")
-    private Integer level;
-
-    @ApiModelProperty("权限点是否启用，0禁用、1正常，默认1")
-    @TableField("status")
-    private Integer status;
 
     @ApiModelProperty("备注")
     @TableField("remark")

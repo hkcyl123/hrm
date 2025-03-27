@@ -1,6 +1,7 @@
 package com.qiujie.vo;
 
 import com.qiujie.annotation.ExcelColumn;
+import com.qiujie.enums.PayStatusEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -8,8 +9,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * @Author qiujie
- * @Date 2022/3/23
+
  * @Version 1.0
  */
 
@@ -91,5 +91,7 @@ public class StaffInsuranceVO implements Serializable {
     @ApiModelProperty("社保备注")
     private String socialRemark;
 
+    @ApiModelProperty("0未支付，1已支付，2支付失败")
+    private PayStatusEnum status;
 
 }

@@ -3,7 +3,7 @@ import request from '../utils/request'
 const url = '/overtime'
 
 // 得到
-export const queryByDeptIdAndTypeNum = (deptId, typeNum) => {
+export const getOvertime = (deptId, typeNum) => {
   return request({
     url: url + '/' + deptId + '/' + typeNum
   })
@@ -16,7 +16,7 @@ export const setOvertime = (data) => {
 }
 
 // 查询所有加班类型
-export const queryAll = () => {
+export const getAll = () => {
   return request({
     url: url + '/all'
   })

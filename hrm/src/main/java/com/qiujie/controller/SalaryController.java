@@ -4,8 +4,6 @@ import com.qiujie.entity.Salary;
 import com.qiujie.dto.ResponseDTO;
 import com.qiujie.service.SalaryService;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,14 +18,12 @@ import java.util.List;
  * 前端控制器
  * </p>
  *
- * @author qiujie
- * @since 2022-04-06
+
  */
 @RestController
 @RequestMapping("/salary")
 public class SalaryController {
-
-    @Autowired
+    @Resource
     private SalaryService salaryService;
 
     @ApiOperation("新增")
@@ -39,7 +35,7 @@ public class SalaryController {
     @ApiOperation("逻辑删除")
     @DeleteMapping("/{id}")
     public ResponseDTO delete(@PathVariable Integer id) {
-        return this.salaryService.delete(id);
+        return this.salaryService.deleteById(id);
     }
 
     @ApiOperation("批量逻辑删除")
@@ -56,34 +52,30 @@ public class SalaryController {
 
     @ApiOperation("查询")
     @GetMapping("/{id}")
-    public ResponseDTO query(@PathVariable Integer id) {
-        return this.salaryService.query(id);
+    public ResponseDTO findById(@PathVariable Integer id) {
+        return this.salaryService.findById(id);
     }
 
     @ApiOperation("分页条件查询")
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('money:salary:list','money:salary:search')")
     public ResponseDTO list(@RequestParam(defaultValue = "1") Integer current, @RequestParam(defaultValue = "10") Integer size, String name, Integer deptId, String month) {
         return this.salaryService.list(current, size, name, deptId, month);
     }
 
     @ApiOperation("数据导出接口")
-    @GetMapping("/export/{month}/{filename}")
-    @PreAuthorize("hasAnyAuthority('money:salary:export')")
-    public void export(HttpServletResponse response, @PathVariable String month,@PathVariable  String filename) throws IOException {
-         this.salaryService.export(response, month,filename);
+    @GetMapping("/export/{month}")
+    public ResponseDTO export(HttpServletResponse response, @PathVariable String month) throws IOException {
+        return this.salaryService.export(response, month);
     }
 
     @ApiOperation("数据导入接口")
     @PostMapping("/import")
-    @PreAuthorize("hasAnyAuthority('money:salary:import')")
     public ResponseDTO imp(MultipartFile file) throws IOException {
         return this.salaryService.imp(file);
     }
 
     @ApiOperation("设置工资")
     @PostMapping("/set")
-    @PreAuthorize("hasAnyAuthority('money:salary:set')")
     public ResponseDTO setSalary(@RequestBody Salary salary) {
         return this.salaryService.setSalary(salary);
     }

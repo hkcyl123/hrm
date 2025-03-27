@@ -18,7 +18,7 @@ export const add = (data) => {
  * @param id
  * @returns {AxiosPromise}
  */
-export const del = (id) => {
+export const deleteOne = (id) => {
   return request({
     url: url + '/' + id, method: 'delete'
   })
@@ -36,48 +36,47 @@ export const edit = (data) => {
   })
 }
 
+// 分页条件查询
+export const getList = (params) => {
+  return request({
+    url: url, method: 'get', params
+  })
+}
+
 // 查询所有
-export const queryAll = () => {
+export const getAll = () => {
   return request({
     url: url + '/all'
   })
 }
 
 // 得到一条数据
-export const query = (id) => {
+export const getOne = (id) => {
   return request({
     url: url + '/' + id
   })
 }
 
-export const queryByStaffIdAndDate = (id, date) => {
+export const getByStaffIdAndDate = (id, date) => {
   return request({
-    url: url + '/' + id + '/' + date
+    url: url + '/staff/' + id + '/' + date
   })
 }
 
-// 查询
-export const list = (params) => {
-  return request({
-    url: url, method: 'get', params
-  })
-}
-
+// 设置社保
 export const setAttendance = (data) => {
   return request({
     url: url + '/set', method: 'put', data
-  })
-}
-export const exp = (month, filename) => {
-  return request({
-    url: url + '/export/' + month + '/' + filename,
-    method: 'get',
-    responseType: 'blob'
   })
 }
 
 // 得到一条数据
 // 数据导入
 export const getImportApi = () => {
-  return process.env.VUE_APP_HOST + ':' + process.env.VUE_APP_PORT + url + '/import'
+  return 'http://localhost:' + process.env.VUE_APP_PORT + url + '/import'
+}
+
+// 数据导出
+export const getExportApi = (month) => {
+  return 'http://localhost:' + process.env.VUE_APP_PORT + url + '/export/' + month
 }

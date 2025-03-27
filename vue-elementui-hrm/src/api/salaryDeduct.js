@@ -3,7 +3,7 @@ import request from '../utils/request'
 const url = '/salary-deduct'
 
 // 得到
-export const queryByDeptIdAndTypeNum = (deptId, typeNum) => {
+export const getSalaryDeduct = (deptId, typeNum) => {
   return request({
     url: url + '/' + deptId + '/' + typeNum
   })
@@ -18,7 +18,7 @@ export const setSalaryDeduct = (data) => {
 }
 
 // 获得所有
-export const queryAll = () => {
+export const getAll = () => {
   return request({
     url: url + '/all'
   })

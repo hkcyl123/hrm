@@ -58,11 +58,6 @@
             ></el-input-number>
           </el-form-item>
         </el-form-item>
-        <el-form-item label="加班费">
-          <el-input-number v-model="dialogForm.formData.overtimeSalary" :min="0" style="width:48%" :precision="3"
-                           :controls="false" disabled
-          />
-        </el-form-item>
         <el-form-item label="最终工资" prop="totalSalary">
           <el-input-number v-model="dialogForm.formData.totalSalary" style="width:48%" :disabled="true"
                            :controls="false" :precision="3"/>
@@ -82,14 +77,14 @@
     </el-dialog>
     <!--操作-->
     <div style="margin-bottom: 10px">
-      <el-upload v-permission="['money:salary:import']" :action="importApi" :headers="headers" accept="xlsx" :show-file-list="false"
+      <el-upload :action="importApi" :headers="headers" accept="xlsx" :show-file-list="false"
                  :on-success="handleImportSuccess" :multiple="false"
                  style="display:inline-block">
         <el-button type="success" size="mini"
         >导入 <i class="el-icon-bottom"></i>
         </el-button>
       </el-upload>
-      <el-button v-permission="['money:salary:export']" type="warning" size="mini" @click="handleExport" style="margin-left: 10px"
+      <el-button type="warning" size="mini" @click="exportData" style="margin-left: 10px"
       >导出 <i class="el-icon-top"></i>
       </el-button>
     </div>
@@ -128,7 +123,7 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button v-permission="['money:salary:search']" type="primary" @click="search" size="mini">搜索 <i class="el-icon-search"/></el-button>
+          <el-button type="primary" @click="search" size="mini">搜索 <i class="el-icon-search"/></el-button>
           <el-button type="danger" @click="reset" size="mini">重置 <i class="el-icon-refresh-left"/></el-button>
         </el-form-item>
       </el-form>
@@ -136,7 +131,6 @@
     <!--    数据表格-->
     <div class="common-table">
       <el-table
-        ref="table"
         :data="table.tableData"
         height="85%"
         border
@@ -145,8 +139,8 @@
         :header-cell-style="{background: '#eef1f6',color: '#606266',
         textAlign:'center',fontWeight:'bold',borderWidth:'3px'}"
       >
-        <el-table-column prop="code" label="工号" min-width="125" align="center" fixed/>
-        <el-table-column prop="name" label="姓名" min-width="125" align="center" fixed/>
+        <el-table-column prop="code" label="工号" min-width="125" align="center"/>
+        <el-table-column prop="name" label="姓名" min-width="125" align="center"/>
         <el-table-column prop="deptName" label="部门" min-width="125" align="center"/>
         <el-table-column prop="phone" label="电话" min-width="125" align="center"/>
         <el-table-column label="扣款项目">
@@ -161,7 +155,6 @@
         </el-table-column>
         <el-table-column label="实发工资">
           <el-table-column prop="baseSalary" label="基础工资" min-width="125" align="center"/>
-          <el-table-column prop="overtimeSalary" label="加班费" min-width="125" align="center"/>
           <el-table-column prop="subsidy" label="生活补贴" min-width="125" align="center"/>
           <el-table-column prop="bonus" label="奖金" min-width="125" align="center"/>
         </el-table-column>
@@ -169,7 +162,7 @@
         <el-table-column prop="remark" label="备注" min-width="200" align="center"/>
         <el-table-column label="操作" width="190" fixed="right" align="center">
           <template slot-scope="scope">
-            <el-button v-permission="['money:salary:set']" size="mini" type="primary" @click="handleEdit(scope.row)"
+            <el-button size="mini" type="primary" @click="handleEdit(scope.row)"
             >明细 <i class="el-icon-edit"></i
             ></el-button>
           </template>
@@ -189,11 +182,10 @@
   </div>
 </template>
 <script>
-import { getImportApi, list, setSalary, exp } from '@/api/salary'
-import { queryByStaffId } from '@/api/insurance'
-import { mapGetters } from 'vuex'
-import { queryAll } from '@/api/dept'
-import { write } from '@/utils/docs'
+import { getExportApi, getImportApi, getList, setSalary } from '../../../api/salary'
+import { getInsuranceByStaffId } from '../../../api/insurance'
+import { mapState } from 'vuex'
+import { getAllDept } from '@/api/dept'
 
 export default {
   name: 'Salary',
@@ -233,9 +225,9 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['token']),
+    ...mapState('token', ['token']),
     headers () {
-      return { Authorization: 'Bearer ' + this.token }
+      return { token: this.token }
     },
     // 获取导入数据的接口
     importApi () {
@@ -251,36 +243,25 @@ export default {
     },
     'dialogForm.formData.bonus': function () {
       this.calculateSalary()
-    },
-    // 监听table数据对象，解决table列fixed对齐错误的问题
-    'table.tableData': function () {
-      this.doLayout()
     }
   },
   methods: {
-    // 重新渲染table组件
-    doLayout () {
-      this.$nextTick(() => {
-        this.$refs.table.doLayout()
-      })
-    },
     // 计算工资
     calculateSalary () {
       this.dialogForm.formData.totalSalary = this.dialogForm.formData.baseSalary +
-        this.dialogForm.formData.subsidy + this.dialogForm.formData.bonus + this.dialogForm.formData.overtimeSalary -
+        this.dialogForm.formData.subsidy + this.dialogForm.formData.bonus -
         this.insurance.perHousePay - this.insurance.perSocialPay - this.dialogForm.formData.lateDeduct -
         this.dialogForm.formData.leaveEarlyDeduct -
         this.dialogForm.formData.leaveDeduct - this.dialogForm.formData.absenteeismDeduct
     },
     handleEdit (row) {
-      queryByStaffId(row.staffId).then(response => {
+      getInsuranceByStaffId(row.staffId).then(response => {
         if (response.code === 200) {
           this.insurance = response.data
           this.dialogForm.isShow = true
           this.dialogForm.formData = {
             staffId: row.staffId,
             baseSalary: row.baseSalary,
-            overtimeSalary: row.overtimeSalary,
             subsidy: row.subsidy,
             bonus: row.bonus,
             month: this.month,
@@ -302,7 +283,7 @@ export default {
             if (response.code === 200) {
               this.$message.success('保存成功')
               this.dialogForm.isShow = false
-              this.search()
+              this.loading()
             } else {
               this.$message.error('保存失败')
             }
@@ -314,37 +295,23 @@ export default {
     },
     handleSizeChange (size) {
       this.table.pageConfig.size = size
-      this.search()
+      this.loading()
     },
     handleCurrentChange (current) {
       this.table.pageConfig.current = current
-      this.search()
+      this.loading()
     },
     search () {
-      list({
-        current: this.table.pageConfig.current,
-        size: this.table.pageConfig.size,
-        name: this.searchForm.formData.name,
-        deptId: this.searchForm.formData.deptId,
-        month: this.searchForm.formData.month
-      }).then(response => {
-        if (response.code === 200) {
-          this.table.tableData = response.data.list
-          this.table.pageConfig.total = response.data.total
-          this.month = response.data.month
-        } else {
-          this.$message.error(response.message)
-        }
-      })
+      this.loading()
     },
     // 重置搜索表单
     reset () {
       this.searchForm.formData = {}
-      this.search()
+      this.loading()
     },
     // 将数据渲染到模板
     loading () {
-      queryAll().then(response => {
+      getAllDept().then(response => {
         const list = []
         response.data.forEach(dept => {
           if (dept.children.length > 0) {
@@ -357,7 +324,7 @@ export default {
         })
         this.searchForm.deptList = list
       })
-      list({
+      getList({
         current: this.table.pageConfig.current,
         size: this.table.pageConfig.size,
         name: this.searchForm.formData.name,
@@ -374,16 +341,13 @@ export default {
       })
     },
     // 导出数据
-    handleExport () {
-      const filename = this.month.substring(0, 4) + '年' + this.month.substring(4) + '月工资报表'
-      exp(this.month, filename).then(response => {
-        write(response, filename + '.xlsx')
-      })
+    exportData () {
+      window.open(getExportApi(this.month))
     },
     handleImportSuccess (response) {
       if (response.code === 200) {
         this.$message.success('数据导入成功！')
-        this.search()
+        this.loading()
       } else {
         this.$message.error('数据导入失败！')
       }

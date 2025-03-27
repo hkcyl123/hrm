@@ -7,8 +7,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * @Author qiujie
- * @Date 2022/4/7
+
  * @Version 1.0
  */
 
@@ -55,7 +54,4 @@ public class AttendanceMonthVO implements Serializable {
 
     @ExcelColumn("休假天数")
     private Integer leaveDays;
-
-    @ExcelColumn("调休天数")
-    private Integer timeOffDays;
 }

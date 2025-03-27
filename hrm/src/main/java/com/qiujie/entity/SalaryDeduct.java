@@ -16,8 +16,7 @@ import java.sql.Timestamp;
  * 工资扣除表
  * </p>
  *
- * @author qiujie
- * @since 2022-03-27
+
  */
 @Getter
 @Setter

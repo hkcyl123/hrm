@@ -8,8 +8,7 @@ import lombok.Getter;
 import org.apache.poi.ss.formula.functions.T;
 
 /**
- * @Author qiujie
- * @Date 2022/3/31
+
  * @Version 1.0
  */
 
@@ -21,9 +20,7 @@ public enum AttendanceStatusEnum implements BaseEnum<T> {
     LATE(1, "迟到",""),
     LEAVE_EARLY(2, "早退","warning"),
     ABSENTEEISM(3, "旷工","danger"),
-    LEAVE(4, "休假","info"),
-    TIME_OFF(5,"调休","info");
-
+    LEAVE(4, "休假","info");
 
     @EnumValue
     private final Integer code;
